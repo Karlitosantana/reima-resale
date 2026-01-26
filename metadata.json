@@ -1,0 +1,7 @@
+{
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "name": "REIMA Resale",
+  "description": "Tracker prodeje dětského oblečení značky Reima a dalších."
+}

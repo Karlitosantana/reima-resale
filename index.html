@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Prodejní Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        darkMode: 'media',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              ios: {
+                blue: '#007AFF',
+                gray: '#F2F2F7',
+                card: '#FFFFFF',
+                text: '#000000',
+                textSec: '#8E8E93',
+                separator: '#C6C6C8',
+                green: '#34C759',
+                red: '#FF3B30',
+                orange: '#FF9500'
+              }
+            },
+            boxShadow: {
+              'ios-card': '0 2px 12px rgba(0, 0, 0, 0.08)',
+              'ios-float': '0 8px 24px rgba(0, 0, 0, 0.12)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+        background-color: #F2F2F7;
+        -webkit-tap-highlight-color: transparent;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #000000;
+          color: #FFFFFF;
+        }
+      }
+      /* Hide scrollbar for clean mobile look but allow scroll */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.8"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
