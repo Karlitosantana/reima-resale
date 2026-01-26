@@ -190,43 +190,50 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
         </div>
       </div>
 
-      {/* Chart - Candle/Bar Style with More Info */}
+      {/* Financial Chart */}
       <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold">Finanční bilance</h3>
-            <div className="flex items-center gap-3 text-[10px] font-medium uppercase text-ios-textSec">
-                <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-ios-gray dark:bg-gray-600"></div>Tržby</div>
-                <div className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-ios-blue"></div>Zisk</div>
+            <div className="flex items-center gap-4 text-[10px] font-semibold uppercase">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-600"></div>
+                  <span className="text-ios-textSec">Tržby</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-sm bg-ios-blue"></div>
+                  <span className="text-ios-textSec">Zisk</span>
+                </div>
             </div>
         </div>
 
-        <div className="w-full" style={{ height: 240 }}>
-          <BarChart width={340} height={240} data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 20 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E5EA" strokeOpacity={0.5} />
-            <XAxis
-              dataKey="name"
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#8E8E93', fontSize: 11 }}
-              interval={0}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={{ fill: '#8E8E93', fontSize: 10 }}
-              tickFormatter={(val) => Math.round(val/1000) + 'k'}
-              width={40}
-            />
-            <Tooltip
-              formatter={(value: number, name: string) => [
-                  `${Math.round(value).toLocaleString('cs-CZ')} Kč`,
-                  name === 'zisk' ? 'Čistý zisk' : 'Celkové tržby'
-              ]}
-            />
-            <Bar dataKey="trzby" fill="#E5E5EA" />
-            <Bar dataKey="zisk" fill="#007AFF" />
-          </BarChart>
-        </div>
+        {chartData.length > 0 ? (
+          <div className="space-y-3">
+            {chartData.map((month, idx) => (
+              <div key={idx} className="space-y-1.5">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-medium text-ios-text dark:text-white w-10">{month.name}</span>
+                  <span className="text-ios-textSec text-[10px]">
+                    {formatCurrency(month.trzby)} / <span className={month.zisk >= 0 ? 'text-ios-green' : 'text-ios-red'}>{formatCurrency(month.zisk)}</span>
+                  </span>
+                </div>
+                <div className="relative h-6 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden">
+                  {/* Revenue bar (background) */}
+                  <div
+                    className="absolute inset-y-0 left-0 bg-gray-200 dark:bg-gray-600 rounded-lg transition-all duration-500"
+                    style={{ width: `${Math.min((month.trzby / Math.max(...chartData.map(m => m.trzby))) * 100, 100)}%` }}
+                  />
+                  {/* Profit bar (foreground) */}
+                  <div
+                    className={`absolute inset-y-0 left-0 rounded-lg transition-all duration-500 ${month.zisk >= 0 ? 'bg-ios-blue' : 'bg-ios-red'}`}
+                    style={{ width: `${Math.min((Math.abs(month.zisk) / Math.max(...chartData.map(m => m.trzby))) * 100, 100)}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-ios-textSec text-sm text-center py-8">Žádná data k zobrazení</p>
+        )}
       </div>
 
       {/* Pie Chart */}
