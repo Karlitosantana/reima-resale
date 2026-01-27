@@ -23,6 +23,7 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
   const [fees, setFees] = useState('0');
   const [shippingCost, setShippingCost] = useState('0');
   const [saleDate, setSaleDate] = useState(new Date().toISOString().split('T')[0]);
+  const [sellQuantity, setSellQuantity] = useState(1);
 
   useEffect(() => {
     if (item && isOpen) {
@@ -31,6 +32,7 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
       setFees('0');
       setShippingCost('0');
       setSaleDate(new Date().toISOString().split('T')[0]);
+      setSellQuantity(1);
     }
   }, [item, isOpen]);
 
@@ -47,22 +49,25 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
   }
 
   const handleSave = () => {
-    // Create new sale record
-    const newSale: Sale = {
-      id: generateId(),
-      salePrice: Number(salePrice) || 0,
-      salePlatform,
-      saleDate,
-      fees: Number(fees) || 0,
-      shippingCost: Number(shippingCost) || 0
-    };
+    // Create sale records for each item being sold
+    const newSales: Sale[] = [];
+    for (let i = 0; i < sellQuantity; i++) {
+      newSales.push({
+        id: generateId(),
+        salePrice: Number(salePrice) || 0,
+        salePlatform,
+        saleDate,
+        fees: Number(fees) || 0,
+        shippingCost: Number(shippingCost) || 0
+      });
+    }
 
     const currentSales = item.sales || [];
-    const updatedSales = [...currentSales, newSale];
-    const quantity = item.quantity || 1;
+    const updatedSales = [...currentSales, ...newSales];
+    const totalQuantity = item.quantity || 1;
 
     // Check if all items are now sold
-    const allSold = updatedSales.length >= quantity;
+    const allSold = updatedSales.length >= totalQuantity;
 
     const updatedItem: Item = {
       ...item,
@@ -79,7 +84,9 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
     onClose();
   };
 
-  const calculatedProfit = (Number(salePrice) || 0) - item.purchasePrice - (Number(fees) || 0) - (Number(shippingCost) || 0);
+  // Calculate profit per item and total
+  const profitPerItem = (Number(salePrice) || 0) - item.purchasePrice - (Number(fees) || 0) - (Number(shippingCost) || 0);
+  const totalProfit = profitPerItem * sellQuantity;
 
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 }).format(val);
@@ -102,7 +109,7 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
               <p className="text-xs text-ios-textSec truncate max-w-[200px]">{item.name}</p>
               {quantity > 1 && (
                 <p className="text-xs font-semibold text-ios-blue mt-1">
-                  Prodej {soldCount + 1} z {quantity} ks (zbývá {remainingCount})
+                  {soldCount > 0 ? `Prodáno ${soldCount}/${quantity} ks` : `Skladem ${quantity} ks`}
                 </p>
               )}
             </div>
@@ -135,6 +142,35 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
                 </span>
               </div>
             </div>
+
+            {/* Quantity Selector - Only show if more than 1 remaining */}
+            {remainingCount > 1 && (
+              <div>
+                <label className="block text-xs font-semibold text-ios-textSec uppercase tracking-wider mb-2">
+                  Počet kusů k prodeji
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSellQuantity(Math.max(1, sellQuantity - 1))}
+                    disabled={sellQuantity <= 1}
+                    className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-lg font-bold text-ios-text dark:text-white disabled:opacity-30"
+                  >
+                    −
+                  </button>
+                  <div className="flex-1 text-center">
+                    <span className="text-2xl font-bold text-ios-text dark:text-white">{sellQuantity}</span>
+                    <span className="text-sm text-ios-textSec ml-1">z {remainingCount} ks</span>
+                  </div>
+                  <button
+                    onClick={() => setSellQuantity(Math.min(remainingCount, sellQuantity + 1))}
+                    disabled={sellQuantity >= remainingCount}
+                    className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-lg font-bold text-ios-text dark:text-white disabled:opacity-30"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* Platform Selection */}
             <div>
@@ -199,20 +235,26 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
             </div>
 
             {/* Profit Preview */}
-            <div className={`p-4 rounded-xl ${calculatedProfit >= 0 ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
+            <div className={`p-4 rounded-xl ${totalProfit >= 0 ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className={`p-1.5 rounded-full ${calculatedProfit >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
-                    <Tag size={14} className={calculatedProfit >= 0 ? 'text-ios-green' : 'text-ios-red'} />
+                  <div className={`p-1.5 rounded-full ${totalProfit >= 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'}`}>
+                    <Tag size={14} className={totalProfit >= 0 ? 'text-ios-green' : 'text-ios-red'} />
                   </div>
-                  <span className="text-sm font-medium text-ios-textSec">Očekávaný zisk</span>
+                  <span className="text-sm font-medium text-ios-textSec">
+                    {sellQuantity > 1 ? `Celkový zisk (${sellQuantity} ks)` : 'Očekávaný zisk'}
+                  </span>
                 </div>
-                <span className={`text-xl font-bold ${calculatedProfit >= 0 ? 'text-ios-green' : 'text-ios-red'}`}>
-                  {calculatedProfit >= 0 ? '+' : ''}{formatCurrency(calculatedProfit)}
+                <span className={`text-xl font-bold ${totalProfit >= 0 ? 'text-ios-green' : 'text-ios-red'}`}>
+                  {totalProfit >= 0 ? '+' : ''}{formatCurrency(totalProfit)}
                 </span>
               </div>
               <p className="text-[10px] text-ios-textSec mt-2">
-                Nákup: {formatCurrency(item.purchasePrice)} + Poplatky: {formatCurrency(Number(fees) + Number(shippingCost))}
+                {sellQuantity > 1 ? (
+                  <>Zisk/ks: {formatCurrency(profitPerItem)} • Nákup/ks: {formatCurrency(item.purchasePrice)}</>
+                ) : (
+                  <>Nákup: {formatCurrency(item.purchasePrice)} + Poplatky: {formatCurrency(Number(fees) + Number(shippingCost))}</>
+                )}
               </p>
             </div>
           </div>
@@ -229,7 +271,7 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
               }`}
             >
               <Check size={20} />
-              Označit jako prodané
+              {sellQuantity > 1 ? `Prodat ${sellQuantity} ks` : 'Označit jako prodané'}
             </button>
           </div>
         </div>
