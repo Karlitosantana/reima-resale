@@ -1,8 +1,5 @@
 import React, { useMemo } from 'react';
 import { Item, DashboardStats } from '../types';
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip
-} from 'recharts';
 import { TrendingUp, Package, Wallet, ArrowUpRight, ArrowDownRight, Tag, Coins } from 'lucide-react';
 
 interface DashboardProps {
@@ -236,22 +233,32 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
         )}
       </div>
 
-      {/* Pie Chart */}
+      {/* Platform Stats */}
       <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card mb-20 border border-transparent dark:border-white/5">
           <h3 className="text-lg font-bold mb-4">Platformy</h3>
           {platformData.length > 0 ? (
-            <div className="flex items-center justify-around py-4">
-              {platformData.map((item, index) => (
-                <div key={item.name} className="flex flex-col items-center">
-                  <div
-                    className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg mb-2"
-                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                  >
-                    {item.value}
+            <div className="space-y-3">
+              {platformData.map((item, index) => {
+                const maxValue = Math.max(...platformData.map(p => p.value));
+                const percentage = (item.value / maxValue) * 100;
+                return (
+                  <div key={item.name} className="space-y-1.5">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="font-medium text-ios-text dark:text-white">{item.name}</span>
+                      <span className="text-ios-textSec font-semibold">{item.value} ks</span>
+                    </div>
+                    <div className="relative h-3 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${percentage}%`,
+                          backgroundColor: COLORS[index % COLORS.length]
+                        }}
+                      />
+                    </div>
                   </div>
-                  <span className="text-xs text-ios-textSec">{item.name}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <p className="text-ios-textSec text-sm text-center py-8">Žádné prodeje k zobrazení</p>

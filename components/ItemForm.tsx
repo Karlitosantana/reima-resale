@@ -3,7 +3,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Item, Platform, ItemCategory } from '../types';
 import { getItems, saveItem, createEmptyItem, deleteItem } from '../services/storage';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { ChevronLeft, Camera, Trash2, Loader2, Snowflake, Shirt, Footprints, Layers, Package, Tag, X, Image as ImageIcon } from 'lucide-react';
+
+const BUCKET_NAME = 'item-images';
 
 // Custom Pants Icon component to replace Scissors
 const PantsIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
@@ -70,53 +73,105 @@ const ItemForm: React.FC = () => {
     setItem(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (item.images.length >= 5) return;
 
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          // AGGRESSIVE COMPRESSION: Reduced form 800 to 600 to prevent crash
-          const maxSize = 600;
+    if (!file) return;
 
-          if (width > height) {
-            if (width > maxSize) {
-              height *= maxSize / width;
-              width = maxSize;
+    setUploadingImage(true);
+
+    try {
+      // Compress image on canvas
+      const compressedBlob = await new Promise<Blob>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new window.Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            // Reduced to 400px for faster loading
+            const maxSize = 400;
+
+            if (width > height) {
+              if (width > maxSize) {
+                height *= maxSize / width;
+                width = maxSize;
+              }
+            } else {
+              if (height > maxSize) {
+                width *= maxSize / height;
+                height = maxSize;
+              }
             }
-          } else {
-            if (height > maxSize) {
-              width *= maxSize / height;
-              height = maxSize;
-            }
-          }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx?.drawImage(img, 0, 0, width, height);
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx?.drawImage(img, 0, 0, width, height);
 
-          // Lower quality to 0.5 to reduce payload size
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.5);
-
-          setItem(prev => {
-              const newImages = [...(prev.images || []), dataUrl];
-              // Automatically switch to the newly added image
-              setActiveImageIndex(newImages.length - 1);
-              return { ...prev, images: newImages };
-          });
+            canvas.toBlob(
+              (blob) => {
+                if (blob) resolve(blob);
+                else reject(new Error('Failed to compress image'));
+              },
+              'image/jpeg',
+              0.7
+            );
+          };
+          img.onerror = reject;
+          img.src = event.target?.result as string;
         };
-        img.src = event.target?.result as string;
-      };
-      reader.readAsDataURL(file);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // Upload to Supabase Storage if configured
+      if (isSupabaseConfigured()) {
+        const fileName = `${item.id}_${Date.now()}.jpg`;
+        const { error: uploadError } = await supabase.storage
+          .from(BUCKET_NAME)
+          .upload(fileName, compressedBlob, {
+            contentType: 'image/jpeg',
+            upsert: true
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+          .from(BUCKET_NAME)
+          .getPublicUrl(fileName);
+
+        setItem(prev => {
+          const newImages = [...(prev.images || []), urlData.publicUrl];
+          setActiveImageIndex(newImages.length - 1);
+          return { ...prev, images: newImages };
+        });
+      } else {
+        // Fallback to base64 for offline/local mode
+        const dataUrl = await new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target?.result as string);
+          reader.readAsDataURL(compressedBlob);
+        });
+
+        setItem(prev => {
+          const newImages = [...(prev.images || []), dataUrl];
+          setActiveImageIndex(newImages.length - 1);
+          return { ...prev, images: newImages };
+        });
+      }
+    } catch (error) {
+      console.error('Image upload error:', error);
+      alert('Nepodařilo se nahrát obrázek. Zkuste to znovu.');
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const removeImage = (indexToRemove: number) => {
@@ -251,6 +306,11 @@ const ItemForm: React.FC = () => {
                         className="w-full h-full object-cover transition-opacity duration-300"
                         alt="Náhled"
                     />
+                    {uploadingImage && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                            <Loader2 className="animate-spin text-white" size={32} />
+                        </div>
+                    )}
 
                     {/* Pagination Dots (Inside Main Image) */}
                     {item.images.length > 1 && (
@@ -278,14 +338,23 @@ const ItemForm: React.FC = () => {
                 </div>
             ) : (
                 <div
-                    onClick={() => !saving && fileInputRef.current?.click()}
+                    onClick={() => !saving && !uploadingImage && fileInputRef.current?.click()}
                     className="w-full aspect-[4/3] bg-gray-50 dark:bg-[#1C1C1E] border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-2xl flex flex-col items-center justify-center cursor-pointer active:bg-gray-100 dark:active:bg-gray-800 transition-colors"
                 >
-                    <div className="bg-gray-200 dark:bg-gray-700 p-4 rounded-full mb-3">
-                        <ImageIcon className="text-gray-400 dark:text-gray-500" size={32} />
-                    </div>
-                    <span className="text-sm font-semibold text-ios-blue">Nahrát první fotku</span>
-                    <span className="text-xs text-gray-400 mt-1">Kliknutím otevřete galerii</span>
+                    {uploadingImage ? (
+                        <>
+                            <Loader2 className="animate-spin text-ios-blue mb-3" size={32} />
+                            <span className="text-sm font-semibold text-ios-blue">Nahrávání...</span>
+                        </>
+                    ) : (
+                        <>
+                            <div className="bg-gray-200 dark:bg-gray-700 p-4 rounded-full mb-3">
+                                <ImageIcon className="text-gray-400 dark:text-gray-500" size={32} />
+                            </div>
+                            <span className="text-sm font-semibold text-ios-blue">Nahrát první fotku</span>
+                            <span className="text-xs text-gray-400 mt-1">Kliknutím otevřete galerii</span>
+                        </>
+                    )}
                 </div>
             )}
 
@@ -303,11 +372,17 @@ const ItemForm: React.FC = () => {
                     {/* Add Button (Small) */}
                     {item.images.length < 5 && (
                         <div
-                            onClick={() => !saving && fileInputRef.current?.click()}
-                            className="flex-shrink-0 w-20 h-20 bg-gray-50 dark:bg-[#1C1C1E] border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center cursor-pointer active:bg-gray-100 dark:active:bg-gray-800 transition-colors snap-start"
+                            onClick={() => !saving && !uploadingImage && fileInputRef.current?.click()}
+                            className={`flex-shrink-0 w-20 h-20 bg-gray-50 dark:bg-[#1C1C1E] border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl flex flex-col items-center justify-center cursor-pointer active:bg-gray-100 dark:active:bg-gray-800 transition-colors snap-start ${uploadingImage ? 'opacity-50' : ''}`}
                         >
-                            <Camera className="text-gray-400" size={20} />
-                            <span className="text-[9px] font-semibold text-gray-500 mt-1">Přidat</span>
+                            {uploadingImage ? (
+                                <Loader2 className="animate-spin text-gray-400" size={20} />
+                            ) : (
+                                <>
+                                    <Camera className="text-gray-400" size={20} />
+                                    <span className="text-[9px] font-semibold text-gray-500 mt-1">Přidat</span>
+                                </>
+                            )}
                         </div>
                     )}
 
