@@ -34,14 +34,14 @@ const PantsIcon = ({ size = 24, className = "" }: { size?: number, className?: s
 
 // Category Configuration with Design Elements
 const CATEGORIES: { id: ItemCategory | 'all'; label: string; icon: any; color: string; lightBg: string; iconColor: string }[] = [
-  { id: 'all', label: 'Vše', icon: Filter, color: 'bg-gray-700', lightBg: 'bg-gray-100 dark:bg-gray-800', iconColor: 'text-gray-600 dark:text-gray-300' },
+  { id: 'all', label: 'Vše', icon: Filter, color: 'bg-gradient-to-tr from-red-600 to-orange-500', lightBg: 'bg-red-50 dark:bg-red-900/20', iconColor: 'text-red-500 dark:text-red-400' },
   { id: 'overalls', label: 'Kombinézy', icon: Snowflake, color: 'bg-gradient-to-tr from-blue-500 to-cyan-400', lightBg: 'bg-blue-50 dark:bg-blue-900/30', iconColor: 'text-blue-500' },
   { id: 'jackets', label: 'Bundy', icon: Shirt, color: 'bg-gradient-to-tr from-orange-500 to-red-500', lightBg: 'bg-orange-50 dark:bg-orange-900/30', iconColor: 'text-orange-500' },
   { id: 'softshell', label: 'Softshell', icon: Layers, color: 'bg-gradient-to-tr from-emerald-500 to-green-400', lightBg: 'bg-emerald-50 dark:bg-emerald-900/30', iconColor: 'text-emerald-500' },
   { id: 'pants', label: 'Kalhoty', icon: PantsIcon, color: 'bg-gradient-to-tr from-violet-500 to-purple-500', lightBg: 'bg-violet-50 dark:bg-violet-900/30', iconColor: 'text-violet-500' },
   { id: 'shoes', label: 'Boty', icon: Footprints, color: 'bg-gradient-to-tr from-amber-500 to-yellow-400', lightBg: 'bg-amber-50 dark:bg-amber-900/30', iconColor: 'text-amber-500' },
   { id: 'accessories', label: 'Doplňky', icon: Tag, color: 'bg-gradient-to-tr from-pink-500 to-rose-400', lightBg: 'bg-pink-50 dark:bg-pink-900/30', iconColor: 'text-pink-500' },
-  { id: 'other', label: 'Ostatní', icon: Package, color: 'bg-gray-500', lightBg: 'bg-gray-100 dark:bg-gray-800', iconColor: 'text-gray-500' },
+  { id: 'other', label: 'Ostatní', icon: Package, color: 'bg-gradient-to-tr from-indigo-500 to-blue-600', lightBg: 'bg-indigo-50 dark:bg-indigo-900/30', iconColor: 'text-indigo-500 dark:text-indigo-400' },
 ];
 
 // --- Sub-component for individual cards to handle swipe state ---
@@ -314,10 +314,20 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
               <button
                 key={cat.id}
                 onClick={() => setCategoryFilter(cat.id)}
-                className={`relative flex flex-col items-center justify-center py-2.5 px-1 rounded-xl transition-all duration-200 border ${
+                style={isSelected ? {
+                  background: cat.id === 'all' ? 'linear-gradient(135deg, #dc2626, #f97316)' :
+                              cat.id === 'overalls' ? 'linear-gradient(135deg, #3b82f6, #22d3ee)' :
+                              cat.id === 'jackets' ? 'linear-gradient(135deg, #f97316, #ef4444)' :
+                              cat.id === 'softshell' ? 'linear-gradient(135deg, #10b981, #4ade80)' :
+                              cat.id === 'pants' ? 'linear-gradient(135deg, #8b5cf6, #a855f7)' :
+                              cat.id === 'shoes' ? 'linear-gradient(135deg, #f59e0b, #facc15)' :
+                              cat.id === 'accessories' ? 'linear-gradient(135deg, #ec4899, #fb7185)' :
+                              'linear-gradient(135deg, #6366f1, #2563eb)'
+                } : undefined}
+                className={`relative flex flex-col items-center justify-center py-2.5 px-1 rounded-xl transition-all duration-200 border-2 ${
                   isSelected
-                    ? `${cat.color} text-white shadow-lg border-transparent`
-                    : `${cat.lightBg} border-transparent hover:border-gray-200 dark:hover:border-gray-600`
+                    ? 'text-white shadow-lg border-transparent scale-105'
+                    : 'bg-white dark:bg-[#2C2C2E] border-gray-200 dark:border-gray-600 hover:border-gray-300 dark:hover:border-gray-500 shadow-sm'
                 }`}
               >
                 <cat.icon
@@ -325,7 +335,7 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
                   strokeWidth={isSelected ? 2.5 : 2}
                 />
                 <span className={`text-[9px] font-semibold leading-tight text-center ${
-                  isSelected ? 'text-white' : cat.iconColor
+                  isSelected ? 'text-white' : 'text-gray-700 dark:text-gray-300'
                 }`}>
                   {cat.label}
                 </span>

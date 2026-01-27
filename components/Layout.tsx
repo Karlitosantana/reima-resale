@@ -23,7 +23,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen bg-ios-gray dark:bg-black pb-24 text-ios-text dark:text-white font-sans selection:bg-red-100 selection:text-red-900">
+    <div className="min-h-screen bg-ios-gray dark:bg-black text-ios-text dark:text-white font-sans selection:bg-red-100 selection:text-red-900">
       <style>{`
         @keyframes spin-slow {
           from { transform: rotate(0deg); }
@@ -45,7 +45,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         }
       `}</style>
 
-      <main className="max-w-md mx-auto min-h-screen bg-ios-gray dark:bg-black relative shadow-2xl overflow-hidden pt-16">
+      <main className="max-w-md mx-auto min-h-screen bg-ios-gray dark:bg-black relative overflow-hidden pt-16 pb-[100px]">
 
         {/* Modern Header */}
         <header className="fixed top-0 max-w-md w-full z-40 glass-header h-16 px-5 flex items-center justify-between transition-all duration-300 border-b border-transparent dark:border-white/10">
@@ -131,23 +131,23 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="absolute inset-x-0 bottom-0 h-20 bg-white/95 dark:bg-[#1C1C1E]/95 backdrop-blur-xl border-t border-gray-200 dark:border-white/10 rounded-t-2xl shadow-lg" />
 
           {/* Navigation content */}
-          <div className="relative px-8 pb-5 pt-3">
-            <div className="flex items-center justify-between">
+          <div className="relative px-6 pb-3 pt-2">
+            <div className="flex items-end justify-center gap-16">
               {/* Dashboard button */}
               <button
                 onClick={() => navigate('/')}
-                className={`flex flex-col items-center justify-center min-w-[64px] py-1 transition-all duration-200 ${
-                  isActive('/') ? 'text-ios-blue' : 'text-blue-400 active:text-blue-500'
+                className={`flex flex-col items-center justify-center min-w-[70px] py-2 px-3 rounded-xl transition-all duration-200 active:scale-95 mt-2 ${
+                  isActive('/') ? 'text-ios-blue bg-ios-blue/10' : 'text-blue-400 active:text-blue-500'
                 }`}
               >
                 <LayoutDashboard size={24} strokeWidth={isActive('/') ? 2.5 : 2} />
-                <span className="text-[10px] font-semibold mt-0.5">Přehled</span>
+                <span className="text-[10px] font-semibold mt-1">Přehled</span>
               </button>
 
               {/* Center Add button - floating above */}
               <button
                 onClick={() => navigate('/add')}
-                className="flex items-center justify-center -mt-10 group"
+                className="flex items-center justify-center -mt-6 group"
               >
                 <div className="bg-white dark:bg-[#2C2C2E] rounded-full w-14 h-14 flex items-center justify-center shadow-lg border-2 border-ios-blue group-active:scale-95 transition-transform duration-150">
                   <Plus size={28} strokeWidth={2.5} className="text-ios-blue" />
@@ -157,12 +157,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {/* Inventory button */}
               <button
                 onClick={() => navigate('/inventory')}
-                className={`flex flex-col items-center justify-center min-w-[64px] py-1 transition-all duration-200 ${
-                  isActive('/inventory') ? 'text-ios-blue' : 'text-blue-400 active:text-blue-500'
+                className={`flex flex-col items-center justify-center min-w-[70px] py-2 px-3 rounded-xl transition-all duration-200 active:scale-95 mt-2 ${
+                  isActive('/inventory') ? 'text-ios-blue bg-ios-blue/10' : 'text-blue-400 active:text-blue-500'
                 }`}
               >
                 <ShoppingBag size={24} strokeWidth={isActive('/inventory') ? 2.5 : 2} />
-                <span className="text-[10px] font-semibold mt-0.5">Inventář</span>
+                <span className="text-[10px] font-semibold mt-1">Inventář</span>
               </button>
             </div>
           </div>
