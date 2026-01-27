@@ -1,9 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Item, DashboardStats } from '../types';
 import { TrendingUp, Package, Wallet, ArrowUpRight, ArrowDownRight, Tag, Coins, Percent } from 'lucide-react';
 import { AnimatedCurrency, AnimatedNumber, AnimatedPercentage } from './AnimatedCounter';
 import EmptyState from './EmptyState';
 import { useNavigate } from 'react-router-dom';
+
+type ChartPeriod = '3m' | '6m' | '12m';
 
 interface DashboardProps {
   items: Item[];
@@ -13,6 +15,7 @@ const COLORS = ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#AF52DE'];
 
 const Dashboard: React.FC<DashboardProps> = ({ items }) => {
   const navigate = useNavigate();
+  const [chartPeriod, setChartPeriod] = useState<ChartPeriod>('6m');
 
   const stats = useMemo(() => {
     let profit = 0;
@@ -54,21 +57,22 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
     };
   }, [items]);
 
-  // Chart Data Preparation - Show last 12 months with year-aware matching
+  // Chart Data Preparation - Dynamic based on selected period
   const chartData = useMemo(() => {
+    const periodMonths = chartPeriod === '3m' ? 3 : chartPeriod === '6m' ? 6 : 12;
     const months: Record<string, { name: string; zisk: number; trzby: number; naklady: number; sortKey: number }> = {};
 
-    // Get last 12 months with year for proper matching
-    const last12Months = Array.from({ length: 12 }, (_, i) => {
+    // Get months based on selected period
+    const periodRange = Array.from({ length: periodMonths }, (_, i) => {
         const d = new Date();
-        d.setMonth(d.getMonth() - (11 - i));
+        d.setMonth(d.getMonth() - (periodMonths - 1 - i));
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const name = d.toLocaleString('cs-CZ', { month: 'short' });
         return { key, name, sortKey: d.getTime() };
     });
 
     // Initialize all months
-    last12Months.forEach(m => months[m.key] = { name: m.name, zisk: 0, trzby: 0, naklady: 0, sortKey: m.sortKey });
+    periodRange.forEach(m => months[m.key] = { name: m.name, zisk: 0, trzby: 0, naklady: 0, sortKey: m.sortKey });
 
     items.filter(i => i.status === 'sold' && i.saleDate).forEach(item => {
         const date = new Date(item.saleDate!);
@@ -86,13 +90,9 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
         }
     });
 
-    // Return sorted by date, only months with data or last 6
-    const allMonths = Object.values(months).sort((a, b) => a.sortKey - b.sortKey);
-    const monthsWithData = allMonths.filter(m => m.trzby > 0);
-
-    // Show months with data, or last 6 if no data
-    return monthsWithData.length > 0 ? monthsWithData.slice(-6) : allMonths.slice(-6);
-  }, [items]);
+    // Return sorted by date
+    return Object.values(months).sort((a, b) => a.sortKey - b.sortKey);
+  }, [items, chartPeriod]);
 
   const platformData = useMemo(() => {
     const platforms: Record<string, number> = {};
@@ -248,17 +248,33 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
 
       {/* Financial Chart */}
       <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.35s', animationFillMode: 'forwards' }}>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold">Finanční bilance</h3>
-            <div className="flex items-center gap-4 text-[10px] font-semibold uppercase">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-600"></div>
-                  <span className="text-ios-textSec">Tržby</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <div className="w-3 h-3 rounded-sm bg-ios-blue"></div>
-                  <span className="text-ios-textSec">Zisk</span>
-                </div>
+            {/* Period Toggle */}
+            <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+              {(['3m', '6m', '12m'] as ChartPeriod[]).map((period) => (
+                <button
+                  key={period}
+                  onClick={() => setChartPeriod(period)}
+                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all duration-200 ${
+                    chartPeriod === period
+                      ? 'bg-white dark:bg-[#2C2C2E] text-ios-blue shadow-sm'
+                      : 'text-ios-textSec hover:text-ios-text'
+                  }`}
+                >
+                  {period === '3m' ? '3M' : period === '6m' ? '6M' : '1R'}
+                </button>
+              ))}
+            </div>
+        </div>
+        <div className="flex items-center gap-4 text-[10px] font-semibold uppercase mb-4">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm bg-gray-200 dark:bg-gray-600"></div>
+              <span className="text-ios-textSec">Tržby</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm bg-ios-blue"></div>
+              <span className="text-ios-textSec">Zisk</span>
             </div>
         </div>
 
