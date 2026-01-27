@@ -247,7 +247,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
                 <button
                   key={period}
                   onClick={() => setChartPeriod(period)}
-                  className={`px-3 py-1.5 text-[14px] font-semibold rounded-md transition-all duration-200 ${
+                  className={`px-2.5 py-1 text-[10px] font-semibold rounded-md transition-all duration-200 ${
                     chartPeriod === period
                       ? 'bg-white dark:bg-[#2C2C2E] text-ios-blue shadow-sm'
                       : 'text-ios-textSec hover:text-ios-text'
