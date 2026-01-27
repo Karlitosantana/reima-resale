@@ -62,8 +62,8 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
       />
 
       {/* Modal */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center">
-        <div className="max-w-md w-full bg-white dark:bg-[#1C1C1E] rounded-t-3xl shadow-2xl animate-slide-up">
+      <div className="fixed bottom-20 left-0 right-0 z-50 flex justify-center">
+        <div className="max-w-md w-full bg-white dark:bg-[#1C1C1E] rounded-3xl shadow-2xl animate-slide-up mx-4 max-h-[80vh] overflow-y-auto">
           {/* Header */}
           <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
             <div>
@@ -185,7 +185,7 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
           </div>
 
           {/* Action Button */}
-          <div className="p-5 pt-0 pb-8">
+          <div className="p-5">
             <button
               onClick={handleSave}
               disabled={!salePrice || Number(salePrice) <= 0}
@@ -199,9 +199,6 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
               Označit jako prodané
             </button>
           </div>
-
-          {/* Safe Area for home indicator */}
-          <div className="h-6 safe-area-bottom" />
         </div>
       </div>
     </>
