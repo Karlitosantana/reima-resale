@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Check, DollarSign, Calendar, Tag } from 'lucide-react';
+import { X, Check, Tag } from 'lucide-react';
 import { Item, Platform } from '../types';
 
 interface QuickSaleModalProps {
@@ -86,15 +86,12 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
                 Prodejní cena *
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <DollarSign size={18} className="text-ios-blue" />
-                </div>
                 <input
                   type="number"
                   value={salePrice}
                   onChange={(e) => setSalePrice(e.target.value)}
                   placeholder="0"
-                  className="w-full pl-11 pr-12 py-4 text-2xl font-bold bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-transparent focus:border-ios-blue focus:outline-none text-ios-text dark:text-white"
+                  className="w-full pl-4 pr-12 py-4 text-2xl font-bold bg-gray-50 dark:bg-gray-800 rounded-xl border-2 border-transparent focus:border-ios-blue focus:outline-none text-ios-text dark:text-white"
                   autoFocus
                 />
                 <span className="absolute inset-y-0 right-0 pr-4 flex items-center text-ios-textSec font-medium">
