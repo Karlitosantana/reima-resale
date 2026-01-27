@@ -1,43 +1,28 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, LogIn, UserPlus, ArrowLeft, Loader2 } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, LogIn, ArrowLeft, Loader2, Snowflake } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from './Toast';
 
-type AuthMode = 'login' | 'signup' | 'forgot';
+type AuthMode = 'login' | 'forgot';
+
+// Allowed admin user
+const ALLOWED_EMAIL = 'karpenet@me.com';
 
 const AuthPage: React.FC = () => {
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
-  const { signIn, signUp, resetPassword } = useAuth();
+  const { signIn, resetPassword } = useAuth();
   const toast = useToast();
 
   // Email validation
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
-  };
-
-  // Password strength validation
-  const validatePassword = (password: string): { valid: boolean; message?: string } => {
-    if (password.length < 8) {
-      return { valid: false, message: 'Heslo musí mít alespoň 8 znaků' };
-    }
-    if (!/[A-Z]/.test(password)) {
-      return { valid: false, message: 'Heslo musí obsahovat velké písmeno' };
-    }
-    if (!/[a-z]/.test(password)) {
-      return { valid: false, message: 'Heslo musí obsahovat malé písmeno' };
-    }
-    if (!/[0-9]/.test(password)) {
-      return { valid: false, message: 'Heslo musí obsahovat číslo' };
-    }
-    return { valid: true };
   };
 
   // Form validation
@@ -53,19 +38,6 @@ const AuthPage: React.FC = () => {
     if (mode !== 'forgot') {
       if (!password) {
         newErrors.password = 'Heslo je povinné';
-      } else if (mode === 'signup') {
-        const passwordValidation = validatePassword(password);
-        if (!passwordValidation.valid) {
-          newErrors.password = passwordValidation.message;
-        }
-      }
-
-      if (mode === 'signup') {
-        if (!confirmPassword) {
-          newErrors.confirmPassword = 'Potvrďte heslo';
-        } else if (password !== confirmPassword) {
-          newErrors.confirmPassword = 'Hesla se neshodují';
-        }
       }
     }
 
@@ -77,6 +49,12 @@ const AuthPage: React.FC = () => {
     e.preventDefault();
 
     if (!validateForm()) return;
+
+    // Check if user is allowed (admin only)
+    if (mode === 'login' && email.trim().toLowerCase() !== ALLOWED_EMAIL) {
+      toast.error('Přístup pouze pro administrátora');
+      return;
+    }
 
     setIsLoading(true);
 
@@ -92,21 +70,15 @@ const AuthPage: React.FC = () => {
             toast.error('Přihlášení selhalo');
           }
         } else {
-          toast.success('Přihlášení úspěšné');
-        }
-      } else if (mode === 'signup') {
-        const { error } = await signUp(email, password);
-        if (error) {
-          if (error.message.includes('already registered')) {
-            toast.error('Tento email je již registrován');
-          } else {
-            toast.error('Registrace selhala');
-          }
-        } else {
-          toast.success('Registrace úspěšná! Zkontrolujte svůj email.');
-          setMode('login');
+          toast.success('Vítejte zpět!');
         }
       } else if (mode === 'forgot') {
+        // Only allow password reset for admin
+        if (email.trim().toLowerCase() !== ALLOWED_EMAIL) {
+          toast.error('Přístup pouze pro administrátora');
+          setIsLoading(false);
+          return;
+        }
         const { error } = await resetPassword(email);
         if (error) {
           toast.error('Nepodařilo se odeslat email');
@@ -125,7 +97,6 @@ const AuthPage: React.FC = () => {
   const resetForm = () => {
     setEmail('');
     setPassword('');
-    setConfirmPassword('');
     setErrors({});
   };
 
@@ -135,18 +106,92 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-ios-gray dark:bg-black flex flex-col items-center justify-center px-5 py-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-slate-900 dark:to-purple-950 flex flex-col items-center justify-center px-5 py-10">
+      {/* Decorative background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-red-400/20 to-orange-300/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-blue-400/20 to-cyan-300/20 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-br from-purple-400/10 to-pink-300/10 rounded-full blur-3xl" />
+      </div>
+
       {/* Logo / Brand */}
-      <div className="mb-8 text-center animate-fade-in-up">
-        <div className="w-20 h-20 bg-gradient-to-br from-ios-blue to-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-float">
-          <span className="text-3xl font-bold text-white">R</span>
+      <div className="mb-8 text-center animate-fade-in-up relative z-10">
+        {/* Main Logo Container */}
+        <div className="relative mx-auto mb-6 w-28 h-28">
+          {/* Outer glow rings */}
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-red-500 via-orange-400 to-yellow-400 opacity-30 blur-xl animate-pulse" />
+          <div className="absolute inset-2 rounded-2xl bg-gradient-to-br from-blue-500 via-cyan-400 to-teal-400 opacity-20 blur-lg animate-pulse" style={{ animationDelay: '0.5s' }} />
+
+          {/* Main icon container */}
+          <div className="relative w-full h-full rounded-3xl bg-gradient-to-br from-red-500 via-rose-500 to-orange-500 p-[3px] shadow-2xl shadow-red-500/30 animate-float">
+            <div className="w-full h-full rounded-[21px] bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center overflow-hidden">
+              {/* Inner colorful pattern */}
+              <div className="absolute inset-0 opacity-10">
+                <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-red-500 via-transparent to-blue-500" />
+              </div>
+
+              {/* Snowflake icon with gradient */}
+              <div className="relative">
+                <Snowflake
+                  size={48}
+                  className="text-transparent"
+                  style={{
+                    stroke: 'url(#snowflake-gradient)',
+                    strokeWidth: 2
+                  }}
+                />
+                {/* SVG gradient definition */}
+                <svg width="0" height="0" className="absolute">
+                  <defs>
+                    <linearGradient id="snowflake-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#ef4444" />
+                      <stop offset="50%" stopColor="#f97316" />
+                      <stop offset="100%" stopColor="#eab308" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+
+                {/* Fallback colored snowflake */}
+                <Snowflake
+                  size={48}
+                  className="absolute inset-0 text-red-500"
+                  strokeWidth={2}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Floating decorative snowflakes */}
+          <div className="absolute -top-2 -right-2 animate-bounce" style={{ animationDelay: '0.2s' }}>
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg">
+              <Snowflake size={12} className="text-white" />
+            </div>
+          </div>
+          <div className="absolute -bottom-1 -left-3 animate-bounce" style={{ animationDelay: '0.5s' }}>
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg">
+              <Snowflake size={10} className="text-white" />
+            </div>
+          </div>
+          <div className="absolute top-1/2 -right-4 animate-bounce" style={{ animationDelay: '0.8s' }}>
+            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center shadow-lg">
+              <Snowflake size={8} className="text-white" />
+            </div>
+          </div>
         </div>
-        <h1 className="text-2xl font-bold text-ios-text dark:text-white">Reima Resale</h1>
-        <p className="text-ios-textSec text-sm mt-1">Sledování vašeho resale podnikání</p>
+
+        {/* Brand text */}
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-gray-400 tracking-[0.25em] uppercase">Kids Wear Tracker</p>
+          <h1 className="text-3xl font-black tracking-tight">
+            <span className="text-gray-900 dark:text-white">REIMA</span>
+            <span className="ml-2 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500">Resale</span>
+          </h1>
+          <p className="text-ios-textSec text-sm mt-2">Váš osobní resale asistent</p>
+        </div>
       </div>
 
       {/* Auth Card */}
-      <div className="w-full max-w-sm bg-white dark:bg-[#1C1C1E] rounded-3xl shadow-ios-card p-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+      <div className="w-full max-w-sm bg-white/80 dark:bg-[#1C1C1E]/90 backdrop-blur-xl rounded-3xl shadow-2xl shadow-black/10 p-6 animate-fade-in-up relative z-10 border border-white/50 dark:border-white/10" style={{ animationDelay: '0.1s' }}>
         {/* Header */}
         <div className="mb-6">
           {mode === 'forgot' && (
@@ -160,12 +205,10 @@ const AuthPage: React.FC = () => {
           )}
           <h2 className="text-xl font-bold text-ios-text dark:text-white">
             {mode === 'login' && 'Přihlášení'}
-            {mode === 'signup' && 'Registrace'}
             {mode === 'forgot' && 'Obnovit heslo'}
           </h2>
           <p className="text-ios-textSec text-sm mt-1">
-            {mode === 'login' && 'Přihlaste se do svého účtu'}
-            {mode === 'signup' && 'Vytvořte si nový účet'}
+            {mode === 'login' && 'Vítejte zpět! Přihlaste se prosím.'}
             {mode === 'forgot' && 'Zadejte email pro obnovení hesla'}
           </p>
         </div>
@@ -222,7 +265,7 @@ const AuthPage: React.FC = () => {
                   className={`w-full pl-11 pr-12 py-3.5 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 ${
                     errors.password ? 'border-ios-red' : 'border-transparent focus:border-ios-blue'
                   } focus:outline-none text-ios-text dark:text-white transition-colors`}
-                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -234,41 +277,6 @@ const AuthPage: React.FC = () => {
               </div>
               {errors.password && (
                 <p className="text-ios-red text-xs mt-1.5">{errors.password}</p>
-              )}
-              {mode === 'signup' && !errors.password && (
-                <p className="text-ios-textSec text-xs mt-1.5">
-                  Min. 8 znaků, velké a malé písmeno, číslo
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Confirm Password */}
-          {mode === 'signup' && (
-            <div>
-              <label className="block text-xs font-semibold text-ios-textSec uppercase tracking-wider mb-2">
-                Potvrdit heslo
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <Lock size={18} className="text-ios-textSec" />
-                </div>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  value={confirmPassword}
-                  onChange={(e) => {
-                    setConfirmPassword(e.target.value);
-                    if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: undefined });
-                  }}
-                  placeholder="••••••••"
-                  className={`w-full pl-11 pr-4 py-3.5 bg-gray-50 dark:bg-gray-800 rounded-xl border-2 ${
-                    errors.confirmPassword ? 'border-ios-red' : 'border-transparent focus:border-ios-blue'
-                  } focus:outline-none text-ios-text dark:text-white transition-colors`}
-                  autoComplete="new-password"
-                />
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-ios-red text-xs mt-1.5">{errors.confirmPassword}</p>
               )}
             </div>
           )}
@@ -292,8 +300,8 @@ const AuthPage: React.FC = () => {
             disabled={isLoading}
             className={`w-full py-4 rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all duration-200 ${
               isLoading
-                ? 'bg-ios-blue/50 cursor-not-allowed'
-                : 'bg-ios-blue hover:bg-blue-600 active:scale-[0.98] shadow-lg shadow-blue-500/30'
+                ? 'bg-gradient-to-r from-red-400 to-orange-400 cursor-not-allowed'
+                : 'bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 hover:from-red-600 hover:via-orange-600 hover:to-yellow-600 active:scale-[0.98] shadow-lg shadow-orange-500/30'
             }`}
           >
             {isLoading ? (
@@ -301,36 +309,24 @@ const AuthPage: React.FC = () => {
             ) : (
               <>
                 {mode === 'login' && <LogIn size={20} />}
-                {mode === 'signup' && <UserPlus size={20} />}
                 {mode === 'forgot' && <Mail size={20} />}
               </>
             )}
             {mode === 'login' && 'Přihlásit se'}
-            {mode === 'signup' && 'Registrovat'}
             {mode === 'forgot' && 'Odeslat email'}
           </button>
         </form>
-
-        {/* Toggle Mode */}
-        {mode !== 'forgot' && (
-          <div className="mt-6 text-center">
-            <p className="text-ios-textSec text-sm">
-              {mode === 'login' ? 'Nemáte účet?' : 'Už máte účet?'}
-              <button
-                onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
-                className="text-ios-blue font-semibold ml-1 hover:opacity-70 transition-opacity"
-              >
-                {mode === 'login' ? 'Registrovat' : 'Přihlásit se'}
-              </button>
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Security Note */}
-      <p className="mt-6 text-ios-textSec text-xs text-center max-w-xs animate-fade-in" style={{ animationDelay: '0.2s' }}>
-        Vaše data jsou šifrována a bezpečně uložena. Používáme nejnovější bezpečnostní standardy.
-      </p>
+      <div className="mt-8 text-center animate-fade-in relative z-10" style={{ animationDelay: '0.2s' }}>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-white/30 dark:border-gray-700/30">
+          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 animate-pulse" />
+          <p className="text-ios-textSec text-xs">
+            Zabezpečeno šifrováním
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
