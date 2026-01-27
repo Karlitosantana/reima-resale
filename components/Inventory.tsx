@@ -148,9 +148,9 @@ const InventoryCard: React.FC<{
         {/* Quantity badge for items with quantity > 1 */}
         {quantity > 1 && (
           <div className={`absolute top-2 right-2 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm z-10 pointer-events-none ${
-            soldCount === quantity ? 'bg-ios-green/90' : soldCount > 0 ? 'bg-ios-blue/90' : 'bg-gray-500/90'
+            remainingCount === 0 ? 'bg-ios-green/90' : remainingCount < quantity ? 'bg-ios-blue/90' : 'bg-gray-500/90'
           }`}>
-            {soldCount}/{quantity} ks
+            {remainingCount === 0 ? 'Vyprodáno' : `${remainingCount} ks`}
           </div>
         )}
 
