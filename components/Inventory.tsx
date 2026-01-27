@@ -29,15 +29,15 @@ const PantsIcon = ({ size = 24, className = "" }: { size?: number, className?: s
 );
 
 // Category Configuration with Design Elements
-const CATEGORIES: { id: ItemCategory | 'all'; label: string; icon: any; color: string }[] = [
-  { id: 'all', label: 'Vše', icon: Filter, color: 'bg-gray-800' },
-  { id: 'overalls', label: 'Kombinézy', icon: Snowflake, color: 'bg-gradient-to-tr from-blue-400 to-blue-600' },
-  { id: 'jackets', label: 'Bundy', icon: Shirt, color: 'bg-gradient-to-tr from-orange-400 to-red-500' },
-  { id: 'softshell', label: 'Softshell', icon: Layers, color: 'bg-gradient-to-tr from-green-400 to-emerald-600' },
-  { id: 'pants', label: 'Kalhoty', icon: PantsIcon, color: 'bg-gradient-to-tr from-indigo-400 to-purple-600' },
-  { id: 'shoes', label: 'Boty', icon: Footprints, color: 'bg-gradient-to-tr from-amber-400 to-yellow-600' },
-  { id: 'accessories', label: 'Doplňky', icon: Tag, color: 'bg-gradient-to-tr from-pink-400 to-rose-600' },
-  { id: 'other', label: 'Ostatní', icon: Package, color: 'bg-gray-400' },
+const CATEGORIES: { id: ItemCategory | 'all'; label: string; icon: any; color: string; lightBg: string; iconColor: string }[] = [
+  { id: 'all', label: 'Vše', icon: Filter, color: 'bg-gray-700', lightBg: 'bg-gray-100 dark:bg-gray-800', iconColor: 'text-gray-600 dark:text-gray-300' },
+  { id: 'overalls', label: 'Kombinézy', icon: Snowflake, color: 'bg-gradient-to-tr from-blue-500 to-cyan-400', lightBg: 'bg-blue-50 dark:bg-blue-900/30', iconColor: 'text-blue-500' },
+  { id: 'jackets', label: 'Bundy', icon: Shirt, color: 'bg-gradient-to-tr from-orange-500 to-red-500', lightBg: 'bg-orange-50 dark:bg-orange-900/30', iconColor: 'text-orange-500' },
+  { id: 'softshell', label: 'Softshell', icon: Layers, color: 'bg-gradient-to-tr from-emerald-500 to-green-400', lightBg: 'bg-emerald-50 dark:bg-emerald-900/30', iconColor: 'text-emerald-500' },
+  { id: 'pants', label: 'Kalhoty', icon: PantsIcon, color: 'bg-gradient-to-tr from-violet-500 to-purple-500', lightBg: 'bg-violet-50 dark:bg-violet-900/30', iconColor: 'text-violet-500' },
+  { id: 'shoes', label: 'Boty', icon: Footprints, color: 'bg-gradient-to-tr from-amber-500 to-yellow-400', lightBg: 'bg-amber-50 dark:bg-amber-900/30', iconColor: 'text-amber-500' },
+  { id: 'accessories', label: 'Doplňky', icon: Tag, color: 'bg-gradient-to-tr from-pink-500 to-rose-400', lightBg: 'bg-pink-50 dark:bg-pink-900/30', iconColor: 'text-pink-500' },
+  { id: 'other', label: 'Ostatní', icon: Package, color: 'bg-gray-500', lightBg: 'bg-gray-100 dark:bg-gray-800', iconColor: 'text-gray-500' },
 ];
 
 // --- Sub-component for individual cards to handle swipe state ---
@@ -277,18 +277,18 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
               <button
                 key={cat.id}
                 onClick={() => setCategoryFilter(cat.id)}
-                className={`relative flex flex-col items-center justify-center py-2.5 px-1 rounded-xl transition-all duration-200 ${
+                className={`relative flex flex-col items-center justify-center py-2.5 px-1 rounded-xl transition-all duration-200 border ${
                   isSelected
-                    ? `${cat.color} text-white shadow-lg`
-                    : 'bg-white dark:bg-[#2C2C2E] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#3C3C3E]'
+                    ? `${cat.color} text-white shadow-lg border-transparent`
+                    : `${cat.lightBg} border-transparent hover:border-gray-200 dark:hover:border-gray-600`
                 }`}
               >
                 <cat.icon
-                  className={`w-5 h-5 mb-1 ${isSelected ? 'text-white' : ''}`}
+                  className={`w-5 h-5 mb-1 ${isSelected ? 'text-white' : cat.iconColor}`}
                   strokeWidth={isSelected ? 2.5 : 2}
                 />
                 <span className={`text-[9px] font-semibold leading-tight text-center ${
-                  isSelected ? 'text-white' : ''
+                  isSelected ? 'text-white' : cat.iconColor
                 }`}>
                   {cat.label}
                 </span>
