@@ -45,7 +45,7 @@ const ToastItem: React.FC<{ toast: Toast; onClose: (id: string) => void }> = ({ 
     const timer = setTimeout(() => {
       setIsExiting(true);
       setTimeout(() => onClose(toast.id), 300);
-    }, toast.duration || 3000);
+    }, toast.duration || 2000);
 
     return () => clearTimeout(timer);
   }, [toast, onClose]);
@@ -82,7 +82,7 @@ const ToastItem: React.FC<{ toast: Toast; onClose: (id: string) => void }> = ({ 
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = useCallback((type: ToastType, message: string, duration = 3000) => {
+  const showToast = useCallback((type: ToastType, message: string, duration = 2000) => {
     const id = Math.random().toString(36).substring(2, 9);
     setToasts(prev => [...prev, { id, type, message, duration }]);
   }, []);
