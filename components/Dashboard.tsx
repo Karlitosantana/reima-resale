@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { Item, DashboardStats } from '../types';
 import { TrendingUp, Package, Wallet, ArrowUpRight, ArrowDownRight, Tag, Coins } from 'lucide-react';
+import { AnimatedCurrency, AnimatedNumber, AnimatedPercentage } from './AnimatedCounter';
 
 interface DashboardProps {
   items: Item[];
@@ -117,7 +118,9 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
         <div className="flex justify-between items-start mb-4">
           <div>
              <p className="text-sm font-medium text-ios-textSec uppercase tracking-wider">Celkový zisk</p>
-             <h2 className="text-3xl font-bold mt-1">{formatCurrency(stats.totalProfit)}</h2>
+             <h2 className="text-3xl font-bold mt-1">
+               <AnimatedCurrency value={stats.totalProfit} className={stats.totalProfit >= 0 ? 'text-ios-green' : 'text-ios-red'} />
+             </h2>
           </div>
           <div className="bg-ios-blue/10 p-2 rounded-full">
             <TrendingUp className="text-ios-blue" size={24} />
@@ -130,14 +133,18 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
                <ArrowUpRight size={14} className="mr-1" />
                Tržby
              </div>
-             <p className="text-lg font-semibold">{formatCurrency(stats.totalRevenue)}</p>
+             <p className="text-lg font-semibold">
+               <AnimatedCurrency value={stats.totalRevenue} />
+             </p>
            </div>
            <div>
              <div className="flex items-center text-ios-red text-xs font-semibold mb-1">
                <ArrowDownRight size={14} className="mr-1" />
                Náklady
              </div>
-             <p className="text-lg font-semibold">{formatCurrency(stats.totalCost)}</p>
+             <p className="text-lg font-semibold">
+               <AnimatedCurrency value={stats.totalCost} />
+             </p>
            </div>
         </div>
       </div>
@@ -150,8 +157,10 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
               <Package size={18} />
               <span className="text-xs font-medium uppercase">Inventář</span>
            </div>
-           <p className="text-2xl font-bold">{stats.activeCount} <span className="text-sm font-normal text-ios-textSec">ks</span></p>
-           <p className="text-xs text-ios-textSec mt-1">Hodnota: {formatCurrency(stats.inventoryValue)}</p>
+           <p className="text-2xl font-bold">
+             <AnimatedNumber value={stats.activeCount} /> <span className="text-sm font-normal text-ios-textSec">ks</span>
+           </p>
+           <p className="text-xs text-ios-textSec mt-1">Hodnota: <AnimatedCurrency value={stats.inventoryValue} duration={800} /></p>
         </div>
 
         {/* Sold */}
@@ -160,8 +169,12 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
               <Wallet size={18} />
               <span className="text-xs font-medium uppercase">Prodáno</span>
            </div>
-           <p className="text-2xl font-bold">{stats.soldCount} <span className="text-sm font-normal text-ios-textSec">ks</span></p>
-           <p className="text-xs text-ios-textSec mt-1">Úspěšnost: {stats.soldCount + stats.activeCount > 0 ? Math.round((stats.soldCount / (stats.soldCount + stats.activeCount)) * 100) : 0}%</p>
+           <p className="text-2xl font-bold">
+             <AnimatedNumber value={stats.soldCount} /> <span className="text-sm font-normal text-ios-textSec">ks</span>
+           </p>
+           <p className="text-xs text-ios-textSec mt-1">
+             Úspěšnost: <AnimatedPercentage value={stats.soldCount + stats.activeCount > 0 ? Math.round((stats.soldCount / (stats.soldCount + stats.activeCount)) * 100) : 0} />
+           </p>
         </div>
 
         {/* Average Price */}
@@ -170,7 +183,9 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
               <Tag size={18} />
               <span className="text-xs font-medium uppercase">Prům. cena</span>
            </div>
-           <p className="text-2xl font-bold">{formatCurrency(stats.averageSalePrice)}</p>
+           <p className="text-2xl font-bold">
+             <AnimatedCurrency value={stats.averageSalePrice} />
+           </p>
            <p className="text-xs text-ios-textSec mt-1">za prodaný kus</p>
         </div>
 
@@ -180,8 +195,11 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
               <Coins size={18} />
               <span className="text-xs font-medium uppercase">Prům. zisk</span>
            </div>
-           <p className={`text-2xl font-bold ${stats.averageProfit > 0 ? 'text-ios-green' : stats.averageProfit < 0 ? 'text-ios-red' : ''}`}>
-             {formatCurrency(stats.averageProfit)}
+           <p className="text-2xl font-bold">
+             <AnimatedCurrency
+               value={stats.averageProfit}
+               className={stats.averageProfit > 0 ? 'text-ios-green' : stats.averageProfit < 0 ? 'text-ios-red' : ''}
+             />
            </p>
            <p className="text-xs text-ios-textSec mt-1">za prodaný kus</p>
         </div>
