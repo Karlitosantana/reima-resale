@@ -454,9 +454,9 @@ const ItemForm: React.FC = () => {
                  </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
                 <div>
-                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Cena (Kč)</label>
+                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Cena/ks (Kč)</label>
                     <input
                         type="number"
                         value={item.purchasePrice === 0 ? '' : item.purchasePrice}
@@ -467,7 +467,19 @@ const ItemForm: React.FC = () => {
                     />
                 </div>
                 <div>
-                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Datum nákupu</label>
+                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Počet ks</label>
+                    <input
+                        type="number"
+                        min="1"
+                        value={item.quantity || 1}
+                        onChange={(e) => handleChange('quantity', Math.max(1, Number(e.target.value) || 1))}
+                        className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-3 rounded-xl font-medium text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                        placeholder="1"
+                        disabled={saving}
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Datum</label>
                     <input
                         type="date"
                         value={item.purchaseDate}

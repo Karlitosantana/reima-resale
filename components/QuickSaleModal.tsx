@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, Tag } from 'lucide-react';
-import { Item, Platform } from '../types';
+import { Item, Platform, Sale } from '../types';
 
 interface QuickSaleModalProps {
   item: Item | null;
@@ -8,6 +8,8 @@ interface QuickSaleModalProps {
   onClose: () => void;
   onSave: (item: Item) => void;
 }
+
+const generateId = () => Math.random().toString(36).substr(2, 9);
 
 const PLATFORMS: { id: Platform; label: string; color: string; lightBg: string; border: string; text: string }[] = [
   { id: 'Vinted', label: 'Vinted', color: '#34C759', lightBg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-600 dark:text-green-400' },
@@ -34,10 +36,39 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
 
   if (!isOpen || !item) return null;
 
+  const quantity = item.quantity || 1;
+  const soldCount = item.sales?.length || 0;
+  const remainingCount = quantity - soldCount;
+
+  // If all items are already sold, don't allow more sales
+  if (remainingCount <= 0) {
+    onClose();
+    return null;
+  }
+
   const handleSave = () => {
+    // Create new sale record
+    const newSale: Sale = {
+      id: generateId(),
+      salePrice: Number(salePrice) || 0,
+      salePlatform,
+      saleDate,
+      fees: Number(fees) || 0,
+      shippingCost: Number(shippingCost) || 0
+    };
+
+    const currentSales = item.sales || [];
+    const updatedSales = [...currentSales, newSale];
+    const quantity = item.quantity || 1;
+
+    // Check if all items are now sold
+    const allSold = updatedSales.length >= quantity;
+
     const updatedItem: Item = {
       ...item,
-      status: 'sold',
+      sales: updatedSales,
+      status: allSold ? 'sold' : 'active',
+      // Also update legacy fields for compatibility (use latest sale)
       salePrice: Number(salePrice) || 0,
       salePlatform,
       fees: Number(fees) || 0,
@@ -69,6 +100,11 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
             <div>
               <h2 className="text-lg font-bold text-ios-text dark:text-white">Rychlý prodej</h2>
               <p className="text-xs text-ios-textSec truncate max-w-[200px]">{item.name}</p>
+              {quantity > 1 && (
+                <p className="text-xs font-semibold text-ios-blue mt-1">
+                  Prodej {soldCount + 1} z {quantity} ks (zbývá {remainingCount})
+                </p>
+              )}
             </div>
             <button
               onClick={onClose}

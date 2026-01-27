@@ -98,9 +98,20 @@ const InventoryCard: React.FC<{
     touchEndX.current = null;
   };
 
-  const profit = item.status === 'sold' && item.salePrice
-    ? item.salePrice - item.purchasePrice - (item.fees || 0) - (item.shippingCost || 0)
-    : null;
+  // Calculate quantity info
+  const quantity = item.quantity || 1;
+  const soldCount = item.sales?.length || 0;
+  const remainingCount = quantity - soldCount;
+  const hasRemaining = remainingCount > 0;
+
+  // Calculate total profit from all sales
+  const totalProfit = item.sales && item.sales.length > 0
+    ? item.sales.reduce((sum, sale) => {
+        return sum + (sale.salePrice - item.purchasePrice - sale.fees - sale.shippingCost);
+      }, 0)
+    : (item.status === 'sold' && item.salePrice
+        ? item.salePrice - item.purchasePrice - (item.fees || 0) - (item.shippingCost || 0)
+        : null);
 
   return (
     <div
@@ -134,7 +145,17 @@ const InventoryCard: React.FC<{
             <ImageOff className="text-gray-300 dark:text-gray-600" />
         )}
 
-        {item.status === 'sold' && (
+        {/* Quantity badge for items with quantity > 1 */}
+        {quantity > 1 && (
+          <div className={`absolute top-2 right-2 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full shadow-sm z-10 pointer-events-none ${
+            soldCount === quantity ? 'bg-ios-green/90' : soldCount > 0 ? 'bg-ios-blue/90' : 'bg-gray-500/90'
+          }`}>
+            {soldCount}/{quantity} ks
+          </div>
+        )}
+
+        {/* Sold badge for single items */}
+        {quantity === 1 && item.status === 'sold' && (
           <div className="absolute top-2 right-2 bg-ios-green/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wide shadow-sm z-10 pointer-events-none">
             Prodáno
           </div>
@@ -180,12 +201,28 @@ const InventoryCard: React.FC<{
             <p className="text-xs text-ios-textSec">Nákup</p>
             <p className="text-sm font-medium text-ios-text dark:text-gray-200">{formatCurrency(item.purchasePrice)}</p>
           </div>
-          {item.status === 'sold' ? (
-             <div className="text-right">
-               <p className="text-xs text-ios-textSec">Zisk</p>
-               <p className={`text-sm font-bold ${profit && profit > 0 ? 'text-ios-green' : 'text-ios-red'}`}>
-                 {profit && profit > 0 ? '+' : ''}{formatCurrency(profit || 0)}
-               </p>
+          {/* Show profit if any sales made */}
+          {soldCount > 0 ? (
+             <div className="text-right flex items-center gap-2">
+               <div>
+                 <p className="text-xs text-ios-textSec">Zisk</p>
+                 <p className={`text-sm font-bold ${totalProfit && totalProfit > 0 ? 'text-ios-green' : 'text-ios-red'}`}>
+                   {totalProfit && totalProfit > 0 ? '+' : ''}{formatCurrency(totalProfit || 0)}
+                 </p>
+               </div>
+               {/* Show quick sale button if items remaining */}
+               {hasRemaining && (
+                 <button
+                   onClick={(e) => {
+                     e.stopPropagation();
+                     onQuickSale?.(item);
+                   }}
+                   className="bg-ios-green/10 dark:bg-ios-green/20 p-2 rounded-full hover:bg-ios-green/20 dark:hover:bg-ios-green/30 transition-colors active:scale-95"
+                   title="Rychlý prodej"
+                 >
+                    <ShoppingBag size={14} className="text-ios-green" />
+                 </button>
+               )}
              </div>
           ) : (
             <button
@@ -223,10 +260,16 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
     setIsQuickSaleOpen(true);
   };
 
-  const handleQuickSaleSave = async (item: Item) => {
+  const handleQuickSaleSave = async (updatedItem: Item) => {
     try {
-      await saveItem(item);
-      toast.success(`${item.name} označeno jako prodané`);
+      await saveItem(updatedItem);
+      const quantity = updatedItem.quantity || 1;
+      const soldCount = updatedItem.sales?.length || 0;
+      if (quantity > 1) {
+        toast.success(`Prodáno ${soldCount}/${quantity} ks`);
+      } else {
+        toast.success(`${updatedItem.name} označeno jako prodané`);
+      }
     } catch (error) {
       toast.error('Nepodařilo se uložit prodej');
     }

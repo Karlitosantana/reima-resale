@@ -26,7 +26,24 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
     let value = 0;
 
     items.forEach(item => {
-      if (item.status === 'sold') {
+      const quantity = item.quantity || 1;
+      const salesCount = item.sales?.length || 0;
+      const remainingCount = quantity - salesCount;
+
+      // Count individual sales from sales array
+      if (item.sales && item.sales.length > 0) {
+        item.sales.forEach(sale => {
+          sold++;
+          const salePrice = sale.salePrice || 0;
+          const fees = (sale.fees || 0) + (sale.shippingCost || 0);
+          const itemProfit = salePrice - item.purchasePrice - fees;
+
+          profit += itemProfit;
+          revenue += salePrice;
+          costs += item.purchasePrice + fees;
+        });
+      } else if (item.status === 'sold' && item.salePrice) {
+        // Legacy support for items without sales array
         sold++;
         const salePrice = item.salePrice || 0;
         const fees = (item.fees || 0) + (item.shippingCost || 0);
@@ -35,9 +52,12 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
         profit += itemProfit;
         revenue += salePrice;
         costs += item.purchasePrice + fees;
-      } else {
-        active++;
-        value += item.purchasePrice;
+      }
+
+      // Add remaining unsold items to active inventory
+      if (remainingCount > 0) {
+        active += remainingCount;
+        value += item.purchasePrice * remainingCount;
       }
     });
 
@@ -74,19 +94,39 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
     // Initialize all months
     periodRange.forEach(m => months[m.key] = { name: m.name, zisk: 0, trzby: 0, naklady: 0, sortKey: m.sortKey });
 
-    items.filter(i => i.status === 'sold' && i.saleDate).forEach(item => {
-        const date = new Date(item.saleDate!);
-        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    items.forEach(item => {
+        // Process individual sales from sales array
+        if (item.sales && item.sales.length > 0) {
+            item.sales.forEach(sale => {
+                const date = new Date(sale.saleDate);
+                const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 
-        if (months[key]) {
-            const salePrice = item.salePrice || 0;
-            const fees = (item.fees || 0) + (item.shippingCost || 0);
-            const cost = item.purchasePrice + fees;
-            const profit = salePrice - cost;
+                if (months[key]) {
+                    const salePrice = sale.salePrice || 0;
+                    const fees = (sale.fees || 0) + (sale.shippingCost || 0);
+                    const cost = item.purchasePrice + fees;
+                    const profit = salePrice - cost;
 
-            months[key].zisk += profit;
-            months[key].trzby += salePrice;
-            months[key].naklady += cost;
+                    months[key].zisk += profit;
+                    months[key].trzby += salePrice;
+                    months[key].naklady += cost;
+                }
+            });
+        } else if (item.status === 'sold' && item.saleDate) {
+            // Legacy support
+            const date = new Date(item.saleDate);
+            const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+
+            if (months[key]) {
+                const salePrice = item.salePrice || 0;
+                const fees = (item.fees || 0) + (item.shippingCost || 0);
+                const cost = item.purchasePrice + fees;
+                const profit = salePrice - cost;
+
+                months[key].zisk += profit;
+                months[key].trzby += salePrice;
+                months[key].naklady += cost;
+            }
         }
     });
 
@@ -96,11 +136,19 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
 
   const platformData = useMemo(() => {
     const platforms: Record<string, number> = {};
-    const soldItems = items.filter(i => i.status === 'sold');
 
-    soldItems.forEach(item => {
-        const p = item.salePlatform || 'Jiné';
-        platforms[p] = (platforms[p] || 0) + 1;
+    items.forEach(item => {
+        // Count sales from sales array
+        if (item.sales && item.sales.length > 0) {
+            item.sales.forEach(sale => {
+                const p = sale.salePlatform || 'Jiné';
+                platforms[p] = (platforms[p] || 0) + 1;
+            });
+        } else if (item.status === 'sold') {
+            // Legacy support
+            const p = item.salePlatform || 'Jiné';
+            platforms[p] = (platforms[p] || 0) + 1;
+        }
     });
 
     const result = Object.entries(platforms)

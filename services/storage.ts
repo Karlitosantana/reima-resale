@@ -94,7 +94,7 @@ const setLocalItems = (items: Item[]) => {
   }
 };
 
-// Helper to migrate old single-image items to new array structure
+// Helper to migrate old items to new structure with quantity and sales
 const migrateItem = (item: any): Item => {
   if (!item) return {
     id: generateId(),
@@ -105,6 +105,8 @@ const migrateItem = (item: any): Item => {
     purchaseSource: '',
     status: 'active',
     images: [],
+    quantity: 1,
+    sales: [],
     createdAt: Date.now()
   } as Item;
 
@@ -127,6 +129,27 @@ const migrateItem = (item: any): Item => {
   if (item.salePrice) item.salePrice = Number(item.salePrice) || 0;
   if (item.fees) item.fees = Number(item.fees) || 0;
   if (item.shippingCost) item.shippingCost = Number(item.shippingCost) || 0;
+
+  // Migrate quantity - default to 1 if not set
+  if (!item.quantity || item.quantity < 1) {
+    item.quantity = 1;
+  }
+
+  // Migrate sales array
+  if (!item.sales) {
+    item.sales = [];
+    // If item was already sold (legacy), create a sale record from legacy fields
+    if (item.status === 'sold' && item.salePrice && item.quantity === 1) {
+      item.sales = [{
+        id: generateId(),
+        salePrice: item.salePrice,
+        salePlatform: item.salePlatform || 'Jiné',
+        saleDate: item.saleDate || new Date().toISOString().split('T')[0],
+        fees: item.fees || 0,
+        shippingCost: item.shippingCost || 0
+      }];
+    }
+  }
 
   return item as Item;
 };
@@ -299,5 +322,7 @@ export const createEmptyItem = (): Item => ({
   size: '',
   condition: undefined,
   listingUrl: '',
+  quantity: 1,
+  sales: [],
   createdAt: Date.now()
 });

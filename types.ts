@@ -4,6 +4,16 @@ export type ItemCategory = 'overalls' | 'jackets' | 'pants' | 'softshell' | 'sho
 
 export type ItemCondition = 'new' | 'like_new' | 'good' | 'fair';
 
+// Individual sale record for items with quantity > 1
+export interface Sale {
+  id: string;
+  salePrice: number;
+  salePlatform: Platform;
+  saleDate: string;
+  fees: number;
+  shippingCost: number;
+}
+
 export interface Item {
   id: string;
   name: string;
@@ -12,13 +22,17 @@ export interface Item {
   category?: ItemCategory;
   size?: string;
   condition?: ItemCondition;
-  purchasePrice: number;
+  purchasePrice: number;  // Price per unit
   purchaseDate: string;
   purchaseSource: string;
-  status: 'active' | 'sold';
+  status: 'active' | 'sold';  // 'sold' when all quantity is sold
   listingUrl?: string;
 
-  // Sale details
+  // Quantity tracking
+  quantity: number;  // Total quantity purchased
+  sales: Sale[];     // Individual sales records
+
+  // Legacy sale details (for backward compatibility with quantity=1 items)
   salePrice?: number;
   saleDate?: string;
   salePlatform?: Platform;
