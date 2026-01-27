@@ -269,30 +269,32 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
           />
         </div>
 
-        {/* Designer Category Thumbnails (Horizontal Scroll)
-            Adjusted padding (px-5) and negative margin (-mx-5) to align first item with search bar
-        */}
-        <div className="flex overflow-x-auto space-x-3 py-4 no-scrollbar -mx-5 px-5 snap-x">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setCategoryFilter(cat.id)}
-              className={`snap-start flex flex-col items-center flex-shrink-0 transition-all duration-300 group ${
-                categoryFilter === cat.id ? 'scale-105' : 'opacity-70 hover:opacity-100'
-              }`}
-            >
-              <div className={`w-14 h-14 rounded-2xl ${cat.color} flex items-center justify-center shadow-lg mb-1.5 ring-offset-2 dark:ring-offset-black transition-all ${
-                categoryFilter === cat.id ? 'ring-2 ring-ios-blue shadow-ios-blue/30' : ''
-              }`}>
-                <cat.icon className="text-white w-6 h-6 drop-shadow-md" strokeWidth={2.5} />
-              </div>
-              <span className={`text-[10px] font-semibold tracking-wide ${
-                categoryFilter === cat.id ? 'text-ios-blue' : 'text-gray-500 dark:text-gray-400'
-              }`}>
-                {cat.label}
-              </span>
-            </button>
-          ))}
+        {/* Category Grid - 4 columns, fits on screen */}
+        <div className="grid grid-cols-4 gap-2">
+          {CATEGORIES.map((cat) => {
+            const isSelected = categoryFilter === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setCategoryFilter(cat.id)}
+                className={`relative flex flex-col items-center justify-center py-2.5 px-1 rounded-xl transition-all duration-200 ${
+                  isSelected
+                    ? `${cat.color} text-white shadow-lg`
+                    : 'bg-white dark:bg-[#2C2C2E] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#3C3C3E]'
+                }`}
+              >
+                <cat.icon
+                  className={`w-5 h-5 mb-1 ${isSelected ? 'text-white' : ''}`}
+                  strokeWidth={isSelected ? 2.5 : 2}
+                />
+                <span className={`text-[9px] font-semibold leading-tight text-center ${
+                  isSelected ? 'text-white' : ''
+                }`}>
+                  {cat.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Filter Tabs */}
