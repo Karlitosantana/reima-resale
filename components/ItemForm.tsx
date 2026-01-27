@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Item, Platform, ItemCategory } from '../types';
 import { getItems, saveItem, createEmptyItem, deleteItem } from '../services/storage';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { useToast } from './Toast';
 import { ChevronLeft, Camera, Trash2, Loader2, Snowflake, Shirt, Footprints, Layers, Package, Tag, X, Image as ImageIcon } from 'lucide-react';
 
 const BUCKET_NAME = 'item-images';
@@ -40,6 +41,7 @@ const CATEGORIES: { id: ItemCategory; label: string; icon: any; color: string }[
 const ItemForm: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const toast = useToast();
   const [item, setItem] = useState<Item>(createEmptyItem());
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -167,7 +169,7 @@ const ItemForm: React.FC = () => {
       }
     } catch (error) {
       console.error('Image upload error:', error);
-      alert('Nepodařilo se nahrát obrázek. Zkuste to znovu.');
+      toast.error('Nepodařilo se nahrát obrázek. Zkuste to znovu.');
     } finally {
       setUploadingImage(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -188,16 +190,24 @@ const ItemForm: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!item.name || item.purchasePrice < 0) return;
+    if (!item.name) {
+      toast.warning('Zadejte název položky');
+      return;
+    }
+    if (item.purchasePrice < 0) {
+      toast.warning('Cena nemůže být záporná');
+      return;
+    }
 
     setSaving(true);
     try {
       await saveItem(item);
+      toast.success(id ? 'Položka uložena' : 'Položka vytvořena');
       setSaving(false);
       navigate(-1);
     } catch (error) {
       console.error("Save error:", error);
-      alert("Nepodařilo se uložit položku. Pravděpodobně jsou obrázky příliš velké nebo došlo k chybě připojení. Zkuste odebrat některé fotky.");
+      toast.error('Nepodařilo se uložit. Zkuste odebrat některé fotky.');
       setSaving(false);
     }
   };
@@ -210,9 +220,10 @@ const ItemForm: React.FC = () => {
         setSaving(true);
         try {
           await deleteItem(item.id);
+          toast.success('Položka smazána');
           navigate('/', { replace: true });
         } catch (error) {
-          alert("Chyba při mazání položky.");
+          toast.error('Chyba při mazání položky.');
           setSaving(false);
         }
     }

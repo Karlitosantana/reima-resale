@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import Inventory from './components/Inventory';
 import ItemForm from './components/ItemForm';
+import { ToastProvider } from './components/Toast';
 import { getItems } from './services/storage';
 import { Item } from './types';
 import { Loader2 } from 'lucide-react';
@@ -41,25 +42,27 @@ const App: React.FC = () => {
   }
 
   return (
-    <HashRouter>
-      <Routes>
-        <Route path="/" element={
-          <Layout>
-            <Dashboard items={items} />
-          </Layout>
-        } />
-        <Route path="/inventory" element={
-          <Layout>
-            <Inventory items={items} />
-          </Layout>
-        } />
-        {/* Standalone pages (modals) covering the layout */}
-        <Route path="/add" element={<ItemForm />} />
-        <Route path="/edit/:id" element={<ItemForm />} />
+    <ToastProvider>
+      <HashRouter>
+        <Routes>
+          <Route path="/" element={
+            <Layout>
+              <Dashboard items={items} />
+            </Layout>
+          } />
+          <Route path="/inventory" element={
+            <Layout>
+              <Inventory items={items} />
+            </Layout>
+          } />
+          {/* Standalone pages (modals) covering the layout */}
+          <Route path="/add" element={<ItemForm />} />
+          <Route path="/edit/:id" element={<ItemForm />} />
 
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </HashRouter>
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </HashRouter>
+    </ToastProvider>
   );
 };
 
