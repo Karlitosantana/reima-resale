@@ -99,7 +99,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <button
               onClick={() => navigate('/')}
               className={`flex flex-col items-center justify-center min-w-[64px] py-2 transition-all duration-200 ${
-                isActive('/') ? 'text-ios-blue' : 'text-gray-400 active:text-gray-600'
+                isActive('/') ? 'text-ios-blue' : 'text-blue-400 active:text-blue-500'
               }`}
             >
               <LayoutDashboard size={26} strokeWidth={isActive('/') ? 2.5 : 2} />
@@ -120,7 +120,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <button
               onClick={() => navigate('/inventory')}
               className={`flex flex-col items-center justify-center min-w-[64px] py-2 transition-all duration-200 ${
-                isActive('/inventory') ? 'text-ios-blue' : 'text-gray-400 active:text-gray-600'
+                isActive('/inventory') ? 'text-ios-blue' : 'text-blue-400 active:text-blue-500'
               }`}
             >
               <ShoppingBag size={26} strokeWidth={isActive('/inventory') ? 2.5 : 2} />
