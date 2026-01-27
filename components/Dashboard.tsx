@@ -273,9 +273,9 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
           <div className="space-y-3">
             {chartData.map((month, idx) => (
               <div key={idx} className="space-y-1.5">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="font-medium text-ios-text dark:text-white w-10">{month.name}</span>
-                  <span className="text-ios-textSec text-[10px]">
+                <div className="flex justify-between items-center">
+                  <span className="font-semibold text-ios-text dark:text-white w-12 text-[17px]">{month.name}</span>
+                  <span className="text-ios-textSec text-[17px]">
                     {formatCurrency(month.trzby)} / <span className={month.zisk >= 0 ? 'text-ios-green' : 'text-ios-red'}>{formatCurrency(month.zisk)}</span>
                   </span>
                 </div>
