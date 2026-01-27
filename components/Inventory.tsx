@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Item, ItemCategory } from '../types';
 import { Search, Filter, Tag, ArrowUpDown, ImageOff, Snowflake, Shirt, Footprints, Layers, Package } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import EmptyState from './EmptyState';
 
 interface InventoryProps {
   items: Item[];
@@ -333,19 +334,17 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
       </div>
 
       {filteredItems.length === 0 && (
-        <div className="text-center py-20 animate-fade-in px-4">
-          <div className="bg-gray-100 dark:bg-gray-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-             <Filter className="text-gray-400" size={32} />
-          </div>
-          <p className="text-gray-800 dark:text-white font-semibold text-lg">Žádné položky</p>
-          <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Zkuste změnit filtry nebo hledaný výraz.</p>
-          {items.length === 0 && (
-             <button
-                onClick={() => navigate('/add')}
-                className="mt-6 bg-ios-blue text-white px-6 py-2.5 rounded-full font-semibold text-sm shadow-lg shadow-blue-500/30 active:scale-95 transition-transform"
-             >
-               Přidat první položku
-             </button>
+        <div className="px-5 mt-4">
+          {items.length === 0 ? (
+            <EmptyState type="inventory" onAction={() => navigate('/add')} />
+          ) : (
+            <div className="text-center py-20 animate-fade-in">
+              <div className="bg-gray-100 dark:bg-gray-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Filter className="text-gray-400" size={32} />
+              </div>
+              <p className="text-gray-800 dark:text-white font-semibold text-lg">Žádné položky</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Zkuste změnit filtry nebo hledaný výraz.</p>
+            </div>
           )}
         </div>
       )}

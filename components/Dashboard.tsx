@@ -1,7 +1,9 @@
 import React, { useMemo } from 'react';
 import { Item, DashboardStats } from '../types';
-import { TrendingUp, Package, Wallet, ArrowUpRight, ArrowDownRight, Tag, Coins } from 'lucide-react';
+import { TrendingUp, Package, Wallet, ArrowUpRight, ArrowDownRight, Tag, Coins, Percent } from 'lucide-react';
 import { AnimatedCurrency, AnimatedNumber, AnimatedPercentage } from './AnimatedCounter';
+import EmptyState from './EmptyState';
+import { useNavigate } from 'react-router-dom';
 
 interface DashboardProps {
   items: Item[];
@@ -10,8 +12,9 @@ interface DashboardProps {
 const COLORS = ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#AF52DE'];
 
 const Dashboard: React.FC<DashboardProps> = ({ items }) => {
+  const navigate = useNavigate();
 
-  const stats: DashboardStats = useMemo(() => {
+  const stats = useMemo(() => {
     let profit = 0;
     let revenue = 0;
     let costs = 0;
@@ -35,6 +38,9 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
       }
     });
 
+    // Calculate ROI (Return on Investment)
+    const roi = costs > 0 ? ((revenue - costs) / costs) * 100 : 0;
+
     return {
       totalProfit: profit,
       totalRevenue: revenue,
@@ -43,7 +49,8 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
       activeCount: active,
       inventoryValue: value,
       averageSalePrice: sold > 0 ? revenue / sold : 0,
-      averageProfit: sold > 0 ? profit / sold : 0
+      averageProfit: sold > 0 ? profit / sold : 0,
+      roi: roi
     };
   }, [items]);
 
@@ -105,6 +112,19 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
 
   const formatCurrency = (val: number) =>
     new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 }).format(val);
+
+  // Show empty state if no items
+  if (items.length === 0) {
+    return (
+      <div className="px-5 pt-8 pb-24 text-ios-text dark:text-white">
+        <header className="mb-6 animate-fade-in-up">
+          <h1 className="text-3xl font-bold">Přehled</h1>
+          <p className="text-ios-textSec text-sm mt-1">Vaše obchodní výsledky</p>
+        </header>
+        <EmptyState type="dashboard" onAction={() => navigate('/add')} />
+      </div>
+    );
+  }
 
   return (
     <div className="px-5 pt-8 pb-4 space-y-6 text-ios-text dark:text-white">
@@ -202,6 +222,27 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
              />
            </p>
            <p className="text-xs text-ios-textSec mt-1">za prodaný kus</p>
+        </div>
+      </div>
+
+      {/* ROI Card - Full Width */}
+      <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-5 rounded-2xl shadow-ios-card animate-fade-in-up opacity-0" style={{ animationDelay: '0.32s', animationFillMode: 'forwards' }}>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="flex items-center space-x-2 mb-2 text-white/80">
+              <Percent size={18} />
+              <span className="text-xs font-medium uppercase tracking-wider">Návratnost investice (ROI)</span>
+            </div>
+            <p className="text-3xl font-bold text-white">
+              <AnimatedPercentage value={Math.round(stats.roi)} />
+            </p>
+            <p className="text-xs text-white/70 mt-1">
+              {stats.roi > 0 ? 'Výborná návratnost!' : stats.roi === 0 ? 'Žádné prodeje' : 'Ztrátové období'}
+            </p>
+          </div>
+          <div className="bg-white/20 p-3 rounded-full animate-float">
+            <TrendingUp className="text-white" size={28} />
+          </div>
         </div>
       </div>
 

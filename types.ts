@@ -41,4 +41,5 @@ export interface DashboardStats {
   inventoryValue: number;
   averageSalePrice: number;
   averageProfit: number;
+  roi: number;
 }
