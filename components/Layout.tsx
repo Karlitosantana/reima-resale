@@ -88,40 +88,45 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 glass-header border-t border-gray-200/50 dark:border-white/10 pb-safe pt-2 z-50">
-        <div className="max-w-md mx-auto flex justify-around items-center px-4 h-16">
-          <button
-            onClick={() => navigate('/')}
-            className={`group flex flex-col items-center justify-center w-16 transition-all duration-300 ${
-              isActive('/') ? 'text-ios-blue scale-105' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-            }`}
-          >
-            <div className={`mb-1 transition-all duration-300 ${isActive('/') ? '-translate-y-0.5' : ''}`}>
-                <LayoutDashboard size={24} strokeWidth={isActive('/') ? 2.5 : 2} />
-            </div>
-            <span className={`text-[10px] font-medium transition-opacity duration-300 ${isActive('/') ? 'opacity-100' : 'opacity-70'}`}>Přehled</span>
-          </button>
+      <nav className="fixed bottom-0 left-0 right-0 z-50">
+        {/* Background with blur */}
+        <div className="absolute inset-0 bg-white/90 dark:bg-[#1C1C1E]/90 backdrop-blur-xl border-t border-gray-200 dark:border-white/10" />
 
-          <button
-            onClick={() => navigate('/add')}
-            className="flex flex-col items-center justify-center w-16 -mt-8 group"
-          >
-            <div className="bg-gradient-to-tr from-ios-blue to-blue-500 text-white rounded-full p-4 shadow-lg shadow-blue-500/30 group-hover:scale-110 group-active:scale-95 transition-all duration-300 ring-4 ring-white/50 dark:ring-black/50 backdrop-blur-sm">
-              <Plus size={24} strokeWidth={3} />
-            </div>
-          </button>
+        {/* Navigation content */}
+        <div className="relative max-w-md mx-auto px-6 pb-6 pt-3">
+          <div className="flex items-end justify-between">
+            {/* Dashboard button */}
+            <button
+              onClick={() => navigate('/')}
+              className={`flex flex-col items-center justify-center min-w-[64px] py-2 transition-all duration-200 ${
+                isActive('/') ? 'text-ios-blue' : 'text-gray-400 active:text-gray-600'
+              }`}
+            >
+              <LayoutDashboard size={26} strokeWidth={isActive('/') ? 2.5 : 2} />
+              <span className="text-[10px] font-semibold mt-1">Přehled</span>
+            </button>
 
-          <button
-            onClick={() => navigate('/inventory')}
-            className={`group flex flex-col items-center justify-center w-16 transition-all duration-300 ${
-              isActive('/inventory') ? 'text-ios-blue scale-105' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
-            }`}
-          >
-            <div className={`mb-1 transition-all duration-300 ${isActive('/inventory') ? '-translate-y-0.5' : ''}`}>
-                <ShoppingBag size={24} strokeWidth={isActive('/inventory') ? 2.5 : 2} />
-            </div>
-            <span className={`text-[10px] font-medium transition-opacity duration-300 ${isActive('/inventory') ? 'opacity-100' : 'opacity-70'}`}>Inventář</span>
-          </button>
+            {/* Center Add button - raised */}
+            <button
+              onClick={() => navigate('/add')}
+              className="flex items-center justify-center -mt-6 group"
+            >
+              <div className="bg-gradient-to-br from-ios-blue to-blue-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-blue-500/40 group-active:scale-95 transition-transform duration-150">
+                <Plus size={28} strokeWidth={2.5} />
+              </div>
+            </button>
+
+            {/* Inventory button */}
+            <button
+              onClick={() => navigate('/inventory')}
+              className={`flex flex-col items-center justify-center min-w-[64px] py-2 transition-all duration-200 ${
+                isActive('/inventory') ? 'text-ios-blue' : 'text-gray-400 active:text-gray-600'
+              }`}
+            >
+              <ShoppingBag size={26} strokeWidth={isActive('/inventory') ? 2.5 : 2} />
+              <span className="text-[10px] font-semibold mt-1">Inventář</span>
+            </button>
+          </div>
         </div>
       </nav>
     </div>
