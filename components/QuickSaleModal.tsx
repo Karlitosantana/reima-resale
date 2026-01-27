@@ -9,12 +9,12 @@ interface QuickSaleModalProps {
   onSave: (item: Item) => void;
 }
 
-const PLATFORMS: { id: Platform; label: string; color: string }[] = [
-  { id: 'Vinted', label: 'Vinted', color: 'bg-teal-500' },
-  { id: 'Facebook', label: 'Facebook', color: 'bg-blue-500' },
-  { id: 'Aukro', label: 'Aukro', color: 'bg-orange-500' },
-  { id: 'Depop', label: 'Depop', color: 'bg-red-500' },
-  { id: 'Jiné', label: 'Jiné', color: 'bg-gray-500' },
+const PLATFORMS: { id: Platform; label: string; color: string; lightBg: string; border: string; text: string }[] = [
+  { id: 'Vinted', label: 'Vinted', color: '#34C759', lightBg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-600 dark:text-green-400' },
+  { id: 'Facebook', label: 'Facebook', color: '#007AFF', lightBg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-600 dark:text-blue-400' },
+  { id: 'Aukro', label: 'Aukro', color: '#FF9500', lightBg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-600 dark:text-orange-400' },
+  { id: 'Depop', label: 'Depop', color: '#FF3B30', lightBg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', text: 'text-red-600 dark:text-red-400' },
+  { id: 'Jiné', label: 'Jiné', color: '#AF52DE', lightBg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800', text: 'text-purple-600 dark:text-purple-400' },
 ];
 
 const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, onSave }) => {
@@ -115,10 +115,11 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
                   <button
                     key={platform.id}
                     onClick={() => setSalePlatform(platform.id)}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    style={salePlatform === platform.id ? { backgroundColor: platform.color } : undefined}
+                    className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 border ${
                       salePlatform === platform.id
-                        ? `${platform.color} text-white shadow-md`
-                        : 'bg-gray-100 dark:bg-gray-800 text-ios-textSec hover:bg-gray-200 dark:hover:bg-gray-700'
+                        ? 'text-white shadow-md border-transparent'
+                        : `${platform.lightBg} ${platform.border} ${platform.text}`
                     }`}
                   >
                     {platform.label}
