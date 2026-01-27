@@ -3,6 +3,9 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 
 const STORAGE_KEY = 'resale_tracker_items';
 
+// Admin user with full database access
+const ADMIN_EMAIL = 'karpenet@me.com';
+
 export const generateId = () => Math.random().toString(36).substr(2, 9);
 
 // Notify helper
@@ -10,14 +13,20 @@ const notifyChange = () => {
   window.dispatchEvent(new Event('storage-update'));
 };
 
-// Get current user ID securely
-const getCurrentUserId = async (): Promise<string | null> => {
+// Get current user info securely
+const getCurrentUser = async (): Promise<{ id: string; email: string } | null> => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    return user?.id ?? null;
+    if (!user) return null;
+    return { id: user.id, email: user.email || '' };
   } catch {
     return null;
   }
+};
+
+// Check if current user is admin
+const isAdmin = (email: string): boolean => {
+  return email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
 };
 
 // Fallback dummy data for initial seeding if needed
@@ -127,20 +136,26 @@ const migrateItem = (item: any): Item => {
 export const getItems = async (): Promise<Item[]> => {
   // 1. If Supabase is configured, try to fetch from cloud
   if (isSupabaseConfigured()) {
-    const userId = await getCurrentUserId();
+    const currentUser = await getCurrentUser();
 
-    if (!userId) {
+    if (!currentUser) {
       console.warn('No authenticated user, returning empty items');
       return [];
     }
 
     try {
-      // Query with user_id filter for security - RLS will also enforce this
-      const { data, error } = await supabase
+      // Admin gets full access to all items, regular users only see their own
+      let query = supabase
         .from('items')
         .select('id, name, data, created_at, user_id')
-        .eq('user_id', userId)
         .limit(500);
+
+      // Only filter by user_id for non-admin users
+      if (!isAdmin(currentUser.email)) {
+        query = query.eq('user_id', currentUser.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -212,13 +227,14 @@ export const saveItem = async (item: Item): Promise<void> => {
   setLocalItems(localItems);
 
   if (isSupabaseConfigured()) {
-    const userId = await getCurrentUserId();
+    const currentUser = await getCurrentUser();
 
-    if (!userId) {
+    if (!currentUser) {
       throw new Error('User not authenticated');
     }
 
     try {
+      // For admin, we can update any item; for regular users, associate with their ID
       const { error } = await supabase
         .from('items')
         .upsert({
@@ -226,7 +242,7 @@ export const saveItem = async (item: Item): Promise<void> => {
           name: item.name,
           data: item, // Store full object in JSONB column
           created_at: item.createdAt,
-          user_id: userId // Associate with current user
+          user_id: currentUser.id // Associate with current user
         });
 
       if (error) throw error;
@@ -245,19 +261,25 @@ export const deleteItem = async (id: string): Promise<void> => {
   setLocalItems(localItems);
 
   if (isSupabaseConfigured()) {
-    const userId = await getCurrentUserId();
+    const currentUser = await getCurrentUser();
 
-    if (!userId) {
+    if (!currentUser) {
       throw new Error('User not authenticated');
     }
 
     try {
-      // Delete only if user owns the item (RLS will also enforce this)
-      const { error } = await supabase
+      // Admin can delete any item, regular users only their own
+      let query = supabase
         .from('items')
         .delete()
-        .eq('id', id)
-        .eq('user_id', userId);
+        .eq('id', id);
+
+      // Only add user_id filter for non-admin users
+      if (!isAdmin(currentUser.email)) {
+        query = query.eq('user_id', currentUser.id);
+      }
+
+      const { error } = await query;
 
       if (error) throw error;
     } catch (err) {
