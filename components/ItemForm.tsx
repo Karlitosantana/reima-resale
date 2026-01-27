@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Item, Platform, ItemCategory } from '../types';
+import { Item, Platform, ItemCategory, Sale } from '../types';
 import { getItems, saveItem, createEmptyItem, deleteItem } from '../services/storage';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useToast } from './Toast';
 import { ChevronLeft, Camera, Trash2, Loader2, Snowflake, Shirt, Footprints, Layers, Package, Tag, X, Image as ImageIcon } from 'lucide-react';
 
 const BUCKET_NAME = 'item-images';
+const generateId = () => Math.random().toString(36).substr(2, 9);
 
 // Custom Pants Icon component to replace Scissors
 const PantsIcon = ({ size = 20, className = "" }: { size?: number, className?: string }) => (
@@ -49,6 +50,10 @@ const ItemForm: React.FC = () => {
   // Carousel State
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sale quantity state
+  const [sellQuantity, setSellQuantity] = useState(1);
+  const [showSaleForm, setShowSaleForm] = useState(false);
 
   // Swipe Refs
   const touchStartX = useRef<number | null>(null);
@@ -229,17 +234,7 @@ const ItemForm: React.FC = () => {
     }
   };
 
-  const handleToggleSold = () => {
-    if (item.status === 'active') {
-        setItem(prev => ({
-            ...prev,
-            status: 'sold',
-            saleDate: new Date().toISOString().split('T')[0]
-        }));
-    } else {
-        setItem(prev => ({ ...prev, status: 'active', salePrice: undefined, fees: undefined }));
-    }
-  };
+  // Removed handleToggleSold - now using sale form with quantity selector
 
   // --- Swipe Handlers ---
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -275,7 +270,7 @@ const ItemForm: React.FC = () => {
     touchEndX.current = null;
   };
 
-  const platforms: Platform[] = ['Vinted', 'Facebook', 'Aukro', 'Depop', 'Jiné'];
+  const platforms: Platform[] = ['Vinted', 'Facebook', 'Jiné'];
 
   if (loading) return (
     <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black text-ios-blue">
@@ -577,96 +572,240 @@ const ItemForm: React.FC = () => {
 
         {/* Sale Section */}
         <section className="bg-gray-50 dark:bg-[#1C1C1E] p-4 rounded-2xl border border-gray-100 dark:border-white/5">
-            <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold text-black dark:text-white">Informace o prodeji</h3>
-                <button
-                    onClick={handleToggleSold}
-                    disabled={saving}
-                    className={`px-4 py-1.5 rounded-full text-sm font-semibold transition-colors ${
-                        item.status === 'sold'
-                        ? 'bg-ios-green text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-                    }`}
-                >
-                    {item.status === 'sold' ? 'Prodáno' : 'Označit jako prodané'}
-                </button>
-            </div>
+            {(() => {
+                const quantity = item.quantity || 1;
+                const sales = item.sales || [];
+                const soldCount = sales.length;
+                const remainingCount = quantity - soldCount;
+                const allSold = remainingCount <= 0;
 
-            {item.status === 'sold' && (
-                <div className="space-y-4 animate-fade-in">
-                    <div className="grid grid-cols-2 gap-4">
-                         <div>
-                            <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Prodejní cena</label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-3 text-gray-500 font-medium">Kč</span>
-                                <input
-                                    type="number"
-                                    value={item.salePrice || ''}
-                                    onChange={(e) => handleChange('salePrice', Number(e.target.value))}
-                                    className="w-full bg-white dark:bg-black pl-9 p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-black dark:text-white font-medium focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue"
-                                    placeholder="0"
-                                    disabled={saving}
-                                />
+                return (
+                    <>
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <h3 className="font-semibold text-black dark:text-white">Informace o prodeji</h3>
+                                {quantity > 1 && (
+                                    <p className="text-xs text-ios-textSec mt-0.5">
+                                        Prodáno {soldCount} z {quantity} ks
+                                    </p>
+                                )}
                             </div>
+                            {!allSold && !showSaleForm && (
+                                <button
+                                    onClick={() => {
+                                        setShowSaleForm(true);
+                                        setSellQuantity(1);
+                                        if (!item.saleDate) {
+                                            handleChange('saleDate', new Date().toISOString().split('T')[0]);
+                                        }
+                                    }}
+                                    disabled={saving}
+                                    className="px-4 py-1.5 rounded-full text-sm font-semibold transition-colors bg-ios-green text-white"
+                                >
+                                    {quantity > 1 ? 'Přidat prodej' : 'Označit jako prodané'}
+                                </button>
+                            )}
+                            {allSold && (
+                                <span className="px-4 py-1.5 rounded-full text-sm font-semibold bg-ios-green/20 text-ios-green">
+                                    Vše prodáno
+                                </span>
+                            )}
                         </div>
-                        <div>
-                            <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Datum prodeje</label>
-                            <input
-                                type="date"
-                                value={item.saleDate || ''}
-                                onChange={(e) => handleChange('saleDate', e.target.value)}
-                                className="w-full bg-white dark:bg-black p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-black dark:text-white font-medium focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue dark:color-scheme-dark"
-                                disabled={saving}
-                            />
-                        </div>
-                    </div>
 
-                    <div>
-                        <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Platforma</label>
-                        <select
-                            value={item.salePlatform || ''}
-                            onChange={(e) => handleChange('salePlatform', e.target.value)}
-                            className="w-full bg-white dark:bg-black p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-black dark:text-white font-medium appearance-none focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue"
-                            disabled={saving}
-                        >
-                            <option value="" disabled>Vybrat platformu</option>
-                            {platforms.map(p => <option key={p} value={p}>{p}</option>)}
-                        </select>
-                    </div>
+                        {/* Existing Sales History */}
+                        {sales.length > 0 && (
+                            <div className="mb-4 space-y-2">
+                                <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-2 ml-1">
+                                    Historie prodejů
+                                </label>
+                                {sales.map((sale, index) => {
+                                    const profit = sale.salePrice - item.purchasePrice - sale.fees - sale.shippingCost;
+                                    return (
+                                        <div key={sale.id || index} className="flex items-center justify-between p-3 bg-white dark:bg-black rounded-xl border border-gray-200 dark:border-gray-700">
+                                            <div className="flex items-center gap-3">
+                                                <div className={`w-2 h-2 rounded-full ${profit >= 0 ? 'bg-ios-green' : 'bg-ios-red'}`} />
+                                                <div>
+                                                    <p className="text-sm font-medium text-black dark:text-white">
+                                                        {sale.salePrice.toLocaleString('cs-CZ')} Kč
+                                                    </p>
+                                                    <p className="text-xs text-ios-textSec">
+                                                        {sale.salePlatform} • {new Date(sale.saleDate).toLocaleDateString('cs-CZ')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <span className={`text-sm font-bold ${profit >= 0 ? 'text-ios-green' : 'text-ios-red'}`}>
+                                                {profit >= 0 ? '+' : ''}{profit.toLocaleString('cs-CZ')} Kč
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
 
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Poplatky (Kč)</label>
-                            <input
-                                type="number"
-                                value={item.fees || ''}
-                                onChange={(e) => handleChange('fees', e.target.value === '' ? 0 : Number(e.target.value))}
-                                className="w-full bg-white dark:bg-black p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-black dark:text-white font-medium focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue"
-                                placeholder="0"
-                                disabled={saving}
-                            />
-                        </div>
-                         <div>
-                            <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Doprava (Kč)</label>
-                            <input
-                                type="number"
-                                value={item.shippingCost || ''}
-                                onChange={(e) => handleChange('shippingCost', e.target.value === '' ? 0 : Number(e.target.value))}
-                                className="w-full bg-white dark:bg-black p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-black dark:text-white font-medium focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue"
-                                placeholder="0"
-                                disabled={saving}
-                            />
-                        </div>
-                    </div>
+                        {/* Sale Form */}
+                        {showSaleForm && (
+                            <div className="space-y-4 animate-fade-in">
+                                {/* Quantity Selector - Only show if more than 1 remaining */}
+                                {remainingCount > 1 && (
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-2 ml-1">
+                                            Počet kusů k prodeji
+                                        </label>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => setSellQuantity(Math.max(1, sellQuantity - 1))}
+                                                disabled={sellQuantity <= 1}
+                                                className="w-10 h-10 rounded-lg bg-white dark:bg-black border border-gray-200 dark:border-gray-700 flex items-center justify-center text-lg font-bold text-black dark:text-white disabled:opacity-30"
+                                            >
+                                                −
+                                            </button>
+                                            <div className="flex-1 text-center">
+                                                <span className="text-2xl font-bold text-black dark:text-white">{sellQuantity}</span>
+                                                <span className="text-sm text-ios-textSec ml-1">z {remainingCount} ks</span>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setSellQuantity(Math.min(remainingCount, sellQuantity + 1))}
+                                                disabled={sellQuantity >= remainingCount}
+                                                className="w-10 h-10 rounded-lg bg-white dark:bg-black border border-gray-200 dark:border-gray-700 flex items-center justify-center text-lg font-bold text-black dark:text-white disabled:opacity-30"
+                                            >
+                                                +
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
-                    <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex justify-between items-center border border-blue-100 dark:border-blue-900/30">
-                        <span className="text-sm font-medium text-ios-blue">Odhadovaný zisk:</span>
-                        <span className="text-lg font-bold text-ios-blue">
-                             {((item.salePrice || 0) - item.purchasePrice - (item.fees || 0) - (item.shippingCost || 0)).toLocaleString('cs-CZ')} Kč
-                        </span>
-                    </div>
-                </div>
-            )}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Prodejní cena</label>
+                                        <div className="relative">
+                                            <span className="absolute left-3 top-3 text-gray-500 font-medium">Kč</span>
+                                            <input
+                                                type="number"
+                                                value={item.salePrice || ''}
+                                                onChange={(e) => handleChange('salePrice', Number(e.target.value))}
+                                                className="w-full bg-white dark:bg-black pl-9 p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-black dark:text-white font-medium focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue"
+                                                placeholder="0"
+                                                disabled={saving}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Datum prodeje</label>
+                                        <input
+                                            type="date"
+                                            value={item.saleDate || ''}
+                                            onChange={(e) => handleChange('saleDate', e.target.value)}
+                                            className="w-full bg-white dark:bg-black p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-black dark:text-white font-medium focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue dark:color-scheme-dark"
+                                            disabled={saving}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Platforma</label>
+                                    <select
+                                        value={item.salePlatform || ''}
+                                        onChange={(e) => handleChange('salePlatform', e.target.value)}
+                                        className="w-full bg-white dark:bg-black p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-black dark:text-white font-medium appearance-none focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue"
+                                        disabled={saving}
+                                    >
+                                        <option value="" disabled>Vybrat platformu</option>
+                                        {platforms.map(p => <option key={p} value={p}>{p}</option>)}
+                                    </select>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Poplatky (Kč)</label>
+                                        <input
+                                            type="number"
+                                            value={item.fees || ''}
+                                            onChange={(e) => handleChange('fees', e.target.value === '' ? 0 : Number(e.target.value))}
+                                            className="w-full bg-white dark:bg-black p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-black dark:text-white font-medium focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue"
+                                            placeholder="0"
+                                            disabled={saving}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Doprava (Kč)</label>
+                                        <input
+                                            type="number"
+                                            value={item.shippingCost || ''}
+                                            onChange={(e) => handleChange('shippingCost', e.target.value === '' ? 0 : Number(e.target.value))}
+                                            className="w-full bg-white dark:bg-black p-3 rounded-xl border border-gray-200 dark:border-gray-700 text-sm text-black dark:text-white font-medium focus:outline-none focus:border-ios-blue focus:ring-1 focus:ring-ios-blue"
+                                            placeholder="0"
+                                            disabled={saving}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Profit Preview */}
+                                {(() => {
+                                    const profitPerItem = (item.salePrice || 0) - item.purchasePrice - (item.fees || 0) - (item.shippingCost || 0);
+                                    const totalProfit = profitPerItem * sellQuantity;
+                                    return (
+                                        <div className={`p-3 rounded-xl flex justify-between items-center border ${totalProfit >= 0 ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30' : 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900/30'}`}>
+                                            <span className={`text-sm font-medium ${totalProfit >= 0 ? 'text-ios-green' : 'text-ios-red'}`}>
+                                                {sellQuantity > 1 ? `Celkový zisk (${sellQuantity} ks):` : 'Odhadovaný zisk:'}
+                                            </span>
+                                            <span className={`text-lg font-bold ${totalProfit >= 0 ? 'text-ios-green' : 'text-ios-red'}`}>
+                                                {totalProfit >= 0 ? '+' : ''}{totalProfit.toLocaleString('cs-CZ')} Kč
+                                            </span>
+                                        </div>
+                                    );
+                                })()}
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-2 pt-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowSaleForm(false)}
+                                        className="flex-1 py-3 rounded-xl font-semibold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700"
+                                    >
+                                        Zrušit
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            // Create sale records
+                                            const newSales: Sale[] = [];
+                                            for (let i = 0; i < sellQuantity; i++) {
+                                                newSales.push({
+                                                    id: generateId(),
+                                                    salePrice: item.salePrice || 0,
+                                                    salePlatform: (item.salePlatform || 'Jiné') as Platform,
+                                                    saleDate: item.saleDate || new Date().toISOString().split('T')[0],
+                                                    fees: item.fees || 0,
+                                                    shippingCost: item.shippingCost || 0
+                                                });
+                                            }
+                                            const updatedSales = [...sales, ...newSales];
+                                            const newAllSold = updatedSales.length >= quantity;
+                                            setItem(prev => ({
+                                                ...prev,
+                                                sales: updatedSales,
+                                                status: newAllSold ? 'sold' : 'active'
+                                            }));
+                                            setShowSaleForm(false);
+                                            setSellQuantity(1);
+                                        }}
+                                        disabled={!item.salePrice || item.salePrice <= 0}
+                                        className={`flex-1 py-3 rounded-xl font-semibold text-white ${
+                                            item.salePrice && item.salePrice > 0
+                                                ? 'bg-ios-green'
+                                                : 'bg-gray-300 dark:bg-gray-600'
+                                        }`}
+                                    >
+                                        {sellQuantity > 1 ? `Prodat ${sellQuantity} ks` : 'Potvrdit prodej'}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                );
+            })()}
         </section>
 
         {id && (
