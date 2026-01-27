@@ -237,15 +237,14 @@ export const saveItem = async (item: Item): Promise<void> => {
     }
 
     try {
-      // For admin, we can update any item; for regular users, associate with their ID
+      // Save item to cloud database
       const { error } = await supabase
         .from('items')
         .upsert({
           id: item.id,
           name: item.name,
           data: item, // Store full object in JSONB column
-          created_at: item.createdAt,
-          user_id: currentUser.id // Associate with current user
+          created_at: item.createdAt
         });
 
       if (error) throw error;
@@ -271,18 +270,11 @@ export const deleteItem = async (id: string): Promise<void> => {
     }
 
     try {
-      // Admin can delete any item, regular users only their own
-      let query = supabase
+      // Delete item by id
+      const { error } = await supabase
         .from('items')
         .delete()
         .eq('id', id);
-
-      // Only add user_id filter for non-admin users
-      if (!isAdmin(currentUser.email)) {
-        query = query.eq('user_id', currentUser.id);
-      }
-
-      const { error } = await query;
 
       if (error) throw error;
     } catch (err) {
