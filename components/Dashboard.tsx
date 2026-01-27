@@ -240,14 +240,14 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
       {/* Financial Chart */}
       <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.35s', animationFillMode: 'forwards' }}>
         <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[17px] font-bold">Finanční bilance</h3>
+            <h3 className="text-[14px] font-bold">Finanční bilance</h3>
             {/* Period Toggle */}
             <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
               {(['3m', '6m', '12m'] as ChartPeriod[]).map((period) => (
                 <button
                   key={period}
                   onClick={() => setChartPeriod(period)}
-                  className={`px-3 py-1.5 text-[17px] font-semibold rounded-md transition-all duration-200 ${
+                  className={`px-3 py-1.5 text-[14px] font-semibold rounded-md transition-all duration-200 ${
                     chartPeriod === period
                       ? 'bg-white dark:bg-[#2C2C2E] text-ios-blue shadow-sm'
                       : 'text-ios-textSec hover:text-ios-text'
@@ -258,7 +258,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
               ))}
             </div>
         </div>
-        <div className="flex items-center gap-4 text-[17px] font-semibold mb-4">
+        <div className="flex items-center gap-4 text-[14px] font-semibold mb-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 rounded-sm bg-gray-200 dark:bg-gray-600"></div>
               <span className="text-ios-textSec">Tržby</span>
@@ -274,8 +274,8 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
             {chartData.map((month, idx) => (
               <div key={idx} className="space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-ios-text dark:text-white w-12 text-[17px]">{month.name}</span>
-                  <span className="text-ios-textSec text-[17px]">
+                  <span className="font-semibold text-ios-text dark:text-white w-12 text-[14px]">{month.name}</span>
+                  <span className="text-ios-textSec text-[14px]">
                     {formatCurrency(month.trzby)} / <span className={month.zisk >= 0 ? 'text-ios-green' : 'text-ios-red'}>{formatCurrency(month.zisk)}</span>
                   </span>
                 </div>
@@ -301,7 +301,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
 
       {/* Platform Stats */}
       <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card mb-20 border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
-          <h3 className="text-[17px] font-bold mb-4">Platformy</h3>
+          <h3 className="text-[14px] font-bold mb-4">Platformy</h3>
           {platformData.length > 0 ? (
             <div className="space-y-3">
               {platformData.map((item, index) => {
@@ -309,7 +309,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
                 const percentage = (item.value / maxValue) * 100;
                 return (
                   <div key={item.name} className="space-y-1.5">
-                    <div className="flex justify-between items-center text-[17px]">
+                    <div className="flex justify-between items-center text-[14px]">
                       <span className="font-medium text-ios-text dark:text-white">{item.name}</span>
                       <span className="text-ios-textSec font-semibold">{item.value} ks</span>
                     </div>
