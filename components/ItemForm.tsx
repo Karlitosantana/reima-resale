@@ -482,8 +482,8 @@ const ItemForm: React.FC = () => {
                 <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-2 ml-1">Zdroj</label>
                 <div className="flex space-x-2 overflow-x-auto pb-1 snap-x">
                     {[
-                        { name: 'Vinted', color: '#007AFF', lightBg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-600 dark:text-blue-400' },
-                        { name: 'Facebook', color: '#34C759', lightBg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-600 dark:text-green-400' },
+                        { name: 'Vinted', color: '#34C759', lightBg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-600 dark:text-green-400' },
+                        { name: 'Facebook', color: '#007AFF', lightBg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-600 dark:text-blue-400' },
                         { name: 'Jiné', color: '#FF9500', lightBg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-600 dark:text-orange-400' }
                     ].map((source) => (
                         <button

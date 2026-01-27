@@ -11,7 +11,7 @@ interface DashboardProps {
   items: Item[];
 }
 
-const COLORS = ['#007AFF', '#34C759', '#FF9500', '#FF3B30', '#AF52DE'];
+const COLORS = ['#34C759', '#007AFF', '#FF9500', '#FF3B30', '#AF52DE'];
 
 const Dashboard: React.FC<DashboardProps> = ({ items }) => {
   const navigate = useNavigate();
