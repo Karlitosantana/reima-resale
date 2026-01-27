@@ -240,7 +240,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
       {/* Financial Chart */}
       <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.35s', animationFillMode: 'forwards' }}>
         <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[14px] font-bold">Finanční bilance</h3>
+            <h3 className="text-[17px] font-bold">Finanční bilance</h3>
             {/* Period Toggle */}
             <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
               {(['3m', '6m', '12m'] as ChartPeriod[]).map((period) => (
@@ -301,7 +301,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
 
       {/* Platform Stats */}
       <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card mb-20 border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
-          <h3 className="text-[14px] font-bold mb-4">Platformy</h3>
+          <h3 className="text-[17px] font-bold mb-4">Platformy</h3>
           {platformData.length > 0 ? (
             <div className="space-y-3">
               {platformData.map((item, index) => {
