@@ -317,13 +317,18 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
 
       {/* Grid */}
       <div className="grid grid-cols-2 gap-4 px-5">
-        {filteredItems.map(item => (
-            <InventoryCard
-                key={item.id}
-                item={item}
-                navigate={navigate}
-                formatCurrency={formatCurrency}
-            />
+        {filteredItems.map((item, index) => (
+            <div
+              key={item.id}
+              className="animate-fade-in-up opacity-0"
+              style={{ animationDelay: `${Math.min(index * 0.05, 0.4)}s`, animationFillMode: 'forwards' }}
+            >
+              <InventoryCard
+                  item={item}
+                  navigate={navigate}
+                  formatCurrency={formatCurrency}
+              />
+            </div>
         ))}
       </div>
 

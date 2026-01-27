@@ -107,22 +107,22 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
     new Intl.NumberFormat('cs-CZ', { style: 'currency', currency: 'CZK', maximumFractionDigits: 0 }).format(val);
 
   return (
-    <div className="px-5 pt-8 pb-4 space-y-6 animate-fade-in text-ios-text dark:text-white">
-      <header className="mb-6">
+    <div className="px-5 pt-8 pb-4 space-y-6 text-ios-text dark:text-white">
+      <header className="mb-6 animate-fade-in-up" style={{ animationDelay: '0s' }}>
         <h1 className="text-3xl font-bold">Přehled</h1>
         <p className="text-ios-textSec text-sm mt-1">Vaše obchodní výsledky</p>
       </header>
 
       {/* Main Stats Card */}
-      <div className="bg-ios-card dark:bg-[#1C1C1E] rounded-2xl p-5 shadow-ios-card border border-white/50 dark:border-white/5">
+      <div className="bg-ios-card dark:bg-[#1C1C1E] rounded-2xl p-5 shadow-ios-card border border-white/50 dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
         <div className="flex justify-between items-start mb-4">
           <div>
              <p className="text-sm font-medium text-ios-textSec uppercase tracking-wider">Celkový zisk</p>
              <h2 className="text-3xl font-bold mt-1">
-               <AnimatedCurrency value={stats.totalProfit} className={stats.totalProfit >= 0 ? 'text-ios-green' : 'text-ios-red'} />
+               <AnimatedCurrency value={stats.totalProfit} className={stats.totalProfit >= 0 ? 'gradient-text-profit' : 'text-ios-red'} />
              </h2>
           </div>
-          <div className="bg-ios-blue/10 p-2 rounded-full">
+          <div className="bg-ios-blue/10 p-2 rounded-full animate-float">
             <TrendingUp className="text-ios-blue" size={24} />
           </div>
         </div>
@@ -152,7 +152,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
       {/* Secondary Stats Grid */}
       <div className="grid grid-cols-2 gap-4">
         {/* Inventory */}
-        <div className="bg-ios-card dark:bg-[#1C1C1E] p-4 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5">
+        <div className="bg-ios-card dark:bg-[#1C1C1E] p-4 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.15s', animationFillMode: 'forwards' }}>
            <div className="flex items-center space-x-2 mb-2 text-ios-textSec">
               <Package size={18} />
               <span className="text-xs font-medium uppercase">Inventář</span>
@@ -164,7 +164,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
         </div>
 
         {/* Sold */}
-        <div className="bg-ios-card dark:bg-[#1C1C1E] p-4 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5">
+        <div className="bg-ios-card dark:bg-[#1C1C1E] p-4 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.2s', animationFillMode: 'forwards' }}>
            <div className="flex items-center space-x-2 mb-2 text-ios-textSec">
               <Wallet size={18} />
               <span className="text-xs font-medium uppercase">Prodáno</span>
@@ -178,7 +178,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
         </div>
 
         {/* Average Price */}
-        <div className="bg-ios-card dark:bg-[#1C1C1E] p-4 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5">
+        <div className="bg-ios-card dark:bg-[#1C1C1E] p-4 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.25s', animationFillMode: 'forwards' }}>
            <div className="flex items-center space-x-2 mb-2 text-ios-textSec">
               <Tag size={18} />
               <span className="text-xs font-medium uppercase">Prům. cena</span>
@@ -190,7 +190,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
         </div>
 
         {/* Average Profit */}
-        <div className="bg-ios-card dark:bg-[#1C1C1E] p-4 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5">
+        <div className="bg-ios-card dark:bg-[#1C1C1E] p-4 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.3s', animationFillMode: 'forwards' }}>
            <div className="flex items-center space-x-2 mb-2 text-ios-textSec">
               <Coins size={18} />
               <span className="text-xs font-medium uppercase">Prům. zisk</span>
@@ -206,7 +206,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
       </div>
 
       {/* Financial Chart */}
-      <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5">
+      <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.35s', animationFillMode: 'forwards' }}>
         <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold">Finanční bilance</h3>
             <div className="flex items-center gap-4 text-[10px] font-semibold uppercase">
@@ -252,7 +252,7 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
       </div>
 
       {/* Platform Stats */}
-      <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card mb-20 border border-transparent dark:border-white/5">
+      <div className="bg-ios-card dark:bg-[#1C1C1E] p-5 rounded-2xl shadow-ios-card mb-20 border border-transparent dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.4s', animationFillMode: 'forwards' }}>
           <h3 className="text-lg font-bold mb-4">Platformy</h3>
           {platformData.length > 0 ? (
             <div className="space-y-3">
