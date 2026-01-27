@@ -217,22 +217,22 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
       </div>
 
       {/* ROI Card - Full Width */}
-      <div className="bg-gradient-to-br from-purple-500 to-pink-500 p-5 rounded-2xl shadow-ios-card animate-fade-in-up opacity-0" style={{ animationDelay: '0.32s', animationFillMode: 'forwards' }}>
+      <div className="bg-gradient-to-br from-violet-700 via-purple-800 to-indigo-900 p-5 rounded-2xl shadow-xl shadow-purple-900/30 animate-fade-in-up opacity-0 border border-purple-500/20" style={{ animationDelay: '0.32s', animationFillMode: 'forwards' }}>
         <div className="flex items-center justify-between">
           <div>
-            <div className="flex items-center space-x-2 mb-2 text-white/80">
+            <div className="flex items-center space-x-2 mb-2 text-purple-200">
               <Percent size={18} />
               <span className="text-xs font-medium uppercase tracking-wider">Návratnost investice (ROI)</span>
             </div>
-            <p className="text-3xl font-bold text-white">
+            <p className="text-3xl font-bold text-white drop-shadow-lg">
               <AnimatedPercentage value={Math.round(stats.roi)} />
             </p>
-            <p className="text-xs text-white/70 mt-1">
+            <p className="text-xs text-purple-200/80 mt-1">
               {stats.roi > 0 ? 'Výborná návratnost!' : stats.roi === 0 ? 'Žádné prodeje' : 'Ztrátové období'}
             </p>
           </div>
-          <div className="bg-white/20 p-3 rounded-full animate-float">
-            <TrendingUp className="text-white" size={28} />
+          <div className="bg-purple-500/30 p-3 rounded-full animate-float border border-purple-400/30">
+            <TrendingUp className="text-purple-200" size={28} />
           </div>
         </div>
       </div>
