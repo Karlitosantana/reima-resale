@@ -1,8 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Item, ItemCategory } from '../types';
-import { Search, Filter, Tag, ArrowUpDown, ImageOff, Snowflake, Shirt, Footprints, Layers, Package } from 'lucide-react';
+import { Search, Filter, Tag, ArrowUpDown, ImageOff, Snowflake, Shirt, Footprints, Layers, Package, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import EmptyState from './EmptyState';
+import QuickSaleModal from './QuickSaleModal';
+import { saveItem } from '../services/storage';
+import { useToast } from './Toast';
 
 interface InventoryProps {
   items: Item[];
@@ -42,7 +45,12 @@ const CATEGORIES: { id: ItemCategory | 'all'; label: string; icon: any; color: s
 ];
 
 // --- Sub-component for individual cards to handle swipe state ---
-const InventoryCard: React.FC<{ item: Item; navigate: (path: string) => void; formatCurrency: (v: number) => string }> = ({ item, navigate, formatCurrency }) => {
+const InventoryCard: React.FC<{
+  item: Item;
+  navigate: (path: string) => void;
+  formatCurrency: (v: number) => string;
+  onQuickSale?: (item: Item) => void;
+}> = ({ item, navigate, formatCurrency, onQuickSale }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
@@ -180,9 +188,16 @@ const InventoryCard: React.FC<{ item: Item; navigate: (path: string) => void; fo
                </p>
              </div>
           ) : (
-            <div className="bg-ios-blue/10 dark:bg-ios-blue/20 p-1.5 rounded-full">
-               <Tag size={14} className="text-ios-blue" />
-            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onQuickSale?.(item);
+              }}
+              className="bg-ios-green/10 dark:bg-ios-green/20 p-2 rounded-full hover:bg-ios-green/20 dark:hover:bg-ios-green/30 transition-colors active:scale-95"
+              title="Rychlý prodej"
+            >
+               <ShoppingBag size={14} className="text-ios-green" />
+            </button>
           )}
         </div>
       </div>
@@ -193,10 +208,29 @@ const InventoryCard: React.FC<{ item: Item; navigate: (path: string) => void; fo
 
 const Inventory: React.FC<InventoryProps> = ({ items }) => {
   const navigate = useNavigate();
+  const toast = useToast();
   const [filter, setFilter] = useState<'all' | 'active' | 'sold'>('all');
   const [categoryFilter, setCategoryFilter] = useState<ItemCategory | 'all'>('all');
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortOption>('date');
+
+  // Quick Sale Modal state
+  const [quickSaleItem, setQuickSaleItem] = useState<Item | null>(null);
+  const [isQuickSaleOpen, setIsQuickSaleOpen] = useState(false);
+
+  const handleQuickSale = (item: Item) => {
+    setQuickSaleItem(item);
+    setIsQuickSaleOpen(true);
+  };
+
+  const handleQuickSaleSave = async (item: Item) => {
+    try {
+      await saveItem(item);
+      toast.success(`${item.name} označeno jako prodané`);
+    } catch (error) {
+      toast.error('Nepodařilo se uložit prodej');
+    }
+  };
 
   const filteredItems = items
     .filter(item => {
@@ -328,6 +362,7 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
                   item={item}
                   navigate={navigate}
                   formatCurrency={formatCurrency}
+                  onQuickSale={handleQuickSale}
               />
             </div>
         ))}
@@ -348,6 +383,17 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
           )}
         </div>
       )}
+
+      {/* Quick Sale Modal */}
+      <QuickSaleModal
+        item={quickSaleItem}
+        isOpen={isQuickSaleOpen}
+        onClose={() => {
+          setIsQuickSaleOpen(false);
+          setQuickSaleItem(null);
+        }}
+        onSave={handleQuickSaleSave}
+      />
     </div>
   );
 };
