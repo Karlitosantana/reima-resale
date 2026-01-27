@@ -489,6 +489,64 @@ const ItemForm: React.FC = () => {
                     disabled={saving}
                 />
             </div>
+
+            {/* Size and Condition */}
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Velikost</label>
+                    <input
+                        type="text"
+                        value={item.size || ''}
+                        onChange={(e) => handleChange('size', e.target.value)}
+                        className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-3 rounded-xl text-sm font-medium text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                        placeholder="Např. 110, 116..."
+                        disabled={saving}
+                    />
+                </div>
+                <div>
+                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Stav</label>
+                    <select
+                        value={item.condition || ''}
+                        onChange={(e) => handleChange('condition', e.target.value)}
+                        className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-3 rounded-xl text-sm font-medium text-black dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                        disabled={saving}
+                    >
+                        <option value="">Vybrat stav</option>
+                        <option value="new">Nové s visačkou</option>
+                        <option value="like_new">Jako nové</option>
+                        <option value="good">Dobrý stav</option>
+                        <option value="fair">Použité</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Notes */}
+            <div>
+                <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Poznámky</label>
+                <textarea
+                    value={item.notes || ''}
+                    onChange={(e) => handleChange('notes', e.target.value)}
+                    className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-3 rounded-xl text-sm font-medium text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-ios-blue resize-none"
+                    placeholder="Další informace o položce..."
+                    rows={2}
+                    disabled={saving}
+                />
+            </div>
+
+            {/* Listing URL - only for active items */}
+            {item.status === 'active' && (
+                <div>
+                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Odkaz na inzerát</label>
+                    <input
+                        type="url"
+                        value={item.listingUrl || ''}
+                        onChange={(e) => handleChange('listingUrl', e.target.value)}
+                        className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-3 rounded-xl text-sm font-medium text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-ios-blue"
+                        placeholder="https://vinted.cz/..."
+                        disabled={saving}
+                    />
+                </div>
+            )}
         </section>
 
         {/* Sale Section */}

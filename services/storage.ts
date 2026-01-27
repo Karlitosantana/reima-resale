@@ -247,5 +247,9 @@ export const createEmptyItem = (): Item => ({
   purchaseSource: '',
   status: 'active',
   images: [],
+  notes: '',
+  size: '',
+  condition: undefined,
+  listingUrl: '',
   createdAt: Date.now()
 });

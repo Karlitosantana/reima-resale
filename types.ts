@@ -2,15 +2,21 @@ export type Platform = 'Vinted' | 'Facebook' | 'Aukro' | 'Depop' | 'Jiné';
 
 export type ItemCategory = 'overalls' | 'jackets' | 'pants' | 'softshell' | 'shoes' | 'accessories' | 'other';
 
+export type ItemCondition = 'new' | 'like_new' | 'good' | 'fair';
+
 export interface Item {
   id: string;
   name: string;
   description?: string;
+  notes?: string;
   category?: ItemCategory;
+  size?: string;
+  condition?: ItemCondition;
   purchasePrice: number;
   purchaseDate: string;
   purchaseSource: string;
   status: 'active' | 'sold';
+  listingUrl?: string;
 
   // Sale details
   salePrice?: number;
