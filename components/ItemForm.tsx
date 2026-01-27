@@ -479,15 +479,24 @@ const ItemForm: React.FC = () => {
             </div>
 
             <div>
-                <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Zdroj</label>
-                <input
-                    type="text"
-                    value={item.purchaseSource}
-                    onChange={(e) => handleChange('purchaseSource', e.target.value)}
-                    className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-3 rounded-xl text-sm font-medium text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-ios-blue"
-                    placeholder="Např. Sekáč, Vinted..."
-                    disabled={saving}
-                />
+                <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-2 ml-1">Zdroj</label>
+                <div className="flex space-x-2 overflow-x-auto pb-1 snap-x">
+                    {['Vinted', 'Facebook', 'Jiné'].map((source) => (
+                        <button
+                            key={source}
+                            type="button"
+                            onClick={() => handleChange('purchaseSource', source)}
+                            disabled={saving}
+                            className={`flex-shrink-0 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all snap-start ${
+                                item.purchaseSource === source
+                                    ? 'bg-ios-blue text-white shadow-md'
+                                    : 'bg-ios-gray dark:bg-[#1C1C1E] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700'
+                            }`}
+                        >
+                            {source}
+                        </button>
+                    ))}
+                </div>
             </div>
 
             {/* Size and Condition */}
