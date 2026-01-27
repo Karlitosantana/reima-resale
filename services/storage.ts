@@ -143,21 +143,22 @@ export const getItems = async (): Promise<Item[]> => {
       return [];
     }
 
-    try {
-      // Admin gets full access to all items, regular users only see their own
-      let query = supabase
-        .from('items')
-        .select('id, name, data, created_at, user_id')
-        .limit(500);
+    console.log('Fetching items for user:', currentUser.email);
 
-      // Only filter by user_id for non-admin users
-      if (!isAdmin(currentUser.email)) {
-        query = query.eq('user_id', currentUser.id);
+    try {
+      // Fetch ALL items - admin has full access
+      // Using * to get all columns regardless of schema
+      const { data, error } = await supabase
+        .from('items')
+        .select('*')
+        .limit(1000);
+
+      if (error) {
+        console.error('Supabase query error:', error);
+        throw error;
       }
 
-      const { data, error } = await query;
-
-      if (error) throw error;
+      console.log('Fetched items count:', data?.length || 0);
 
       // 2. Migration Check: If cloud is empty but we have local data, upload it automatically
       if ((!data || data.length === 0) && getLocalItems().length > 0) {
@@ -179,7 +180,9 @@ export const getItems = async (): Promise<Item[]> => {
           return dummyData;
       }
 
-      // Map Supabase rows back to Item objects AND MIGRATE ON THE FLY
+      // Map Supabase rows back to Item objects
+      console.log('Sample row structure:', data[0] ? Object.keys(data[0]) : 'no data');
+
       return data.map((row: any) => {
           // Handle both: data stored in JSONB 'data' column OR directly as columns
           const itemData = row.data || row;
@@ -187,7 +190,7 @@ export const getItems = async (): Promise<Item[]> => {
           const migrated = migrateItem(itemData);
           return {
               ...migrated,
-              id: row.id,
+              id: row.id || migrated.id,
               // Map common alternative column names
               saleDate: migrated.saleDate || row.sale_date || row.saleDate,
               salePlatform: migrated.salePlatform || row.sale_platform || row.salePlatform,
