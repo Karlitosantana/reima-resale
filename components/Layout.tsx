@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Plus, Snowflake } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Plus, Snowflake, User, LogOut, Settings } from 'lucide-react';
 import { isSupabaseConfigured } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -10,9 +11,16 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, signOut } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
   const isOnline = isSupabaseConfigured();
+
+  const handleSignOut = async () => {
+    await signOut();
+    setShowUserMenu(false);
+  };
 
   return (
     <div className="min-h-screen bg-ios-gray dark:bg-black pb-24 text-ios-text dark:text-white font-sans selection:bg-red-100 selection:text-red-900">
@@ -62,25 +70,54 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 </div>
             </div>
 
-            {/* Status Indicator */}
-            <div
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all duration-500 ${
-                isOnline
-                  ? 'bg-emerald-50/50 border-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-400'
-                  : 'bg-gray-50/50 border-gray-100 text-gray-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400'
-              }`}
-            >
-                {isOnline ? (
-                   <div className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                    </div>
-                ) : (
-                    <div className="h-2 w-2 rounded-full bg-gray-400"></div>
+            {/* User Menu */}
+            <div className="relative">
+              <button
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-ios-blue to-purple-500 flex items-center justify-center">
+                  <User size={14} className="text-white" />
+                </div>
+                {isOnline && (
+                  <div className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </div>
                 )}
-                <span className="text-[10px] font-bold uppercase tracking-wide">
-                    {isOnline ? 'Online' : 'Offline'}
-                </span>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showUserMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setShowUserMenu(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#2C2C2E] rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden animate-fade-in-scale">
+                    {/* User Info */}
+                    <div className="p-4 border-b border-gray-100 dark:border-gray-700">
+                      <p className="text-sm font-medium text-ios-text dark:text-white truncate">
+                        {user?.email || 'Uživatel'}
+                      </p>
+                      <p className="text-xs text-ios-textSec mt-0.5">
+                        {isOnline ? 'Připojeno' : 'Offline režim'}
+                      </p>
+                    </div>
+
+                    {/* Menu Items */}
+                    <div className="py-2">
+                      <button
+                        onClick={handleSignOut}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-left text-ios-red hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
+                        <LogOut size={18} />
+                        <span className="font-medium">Odhlásit se</span>
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
         </header>
 

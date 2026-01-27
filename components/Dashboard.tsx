@@ -116,23 +116,14 @@ const Dashboard: React.FC<DashboardProps> = ({ items }) => {
   // Show empty state if no items
   if (items.length === 0) {
     return (
-      <div className="px-5 pt-8 pb-24 text-ios-text dark:text-white">
-        <header className="mb-6 animate-fade-in-up">
-          <h1 className="text-3xl font-bold">Přehled</h1>
-          <p className="text-ios-textSec text-sm mt-1">Vaše obchodní výsledky</p>
-        </header>
+      <div className="px-5 pt-6 pb-24 text-ios-text dark:text-white">
         <EmptyState type="dashboard" onAction={() => navigate('/add')} />
       </div>
     );
   }
 
   return (
-    <div className="px-5 pt-8 pb-4 space-y-6 text-ios-text dark:text-white">
-      <header className="mb-6 animate-fade-in-up" style={{ animationDelay: '0s' }}>
-        <h1 className="text-3xl font-bold">Přehled</h1>
-        <p className="text-ios-textSec text-sm mt-1">Vaše obchodní výsledky</p>
-      </header>
-
+    <div className="px-5 pt-6 pb-4 space-y-6 text-ios-text dark:text-white">
       {/* Main Stats Card */}
       <div className="bg-ios-card dark:bg-[#1C1C1E] rounded-2xl p-5 shadow-ios-card border border-white/50 dark:border-white/5 animate-fade-in-up opacity-0" style={{ animationDelay: '0.1s', animationFillMode: 'forwards' }}>
         <div className="flex justify-between items-start mb-4">

@@ -10,6 +10,16 @@ const notifyChange = () => {
   window.dispatchEvent(new Event('storage-update'));
 };
 
+// Get current user ID securely
+const getCurrentUserId = async (): Promise<string | null> => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    return user?.id ?? null;
+  } catch {
+    return null;
+  }
+};
+
 // Fallback dummy data for initial seeding if needed
 const dummyData: Item[] = [
   {
@@ -72,8 +82,6 @@ const setLocalItems = (items: Item[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
   } catch (e) {
     console.error("LocalStorage Save Error (Quota Exceeded?):", e);
-    // If local storage is full, we might just have to continue if we are using Supabase
-    // But if we are offline, this is a critical failure.
   }
 };
 
@@ -119,11 +127,19 @@ const migrateItem = (item: any): Item => {
 export const getItems = async (): Promise<Item[]> => {
   // 1. If Supabase is configured, try to fetch from cloud
   if (isSupabaseConfigured()) {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      console.warn('No authenticated user, returning empty items');
+      return [];
+    }
+
     try {
-      // Optimized query - select only essential columns
+      // Query with user_id filter for security - RLS will also enforce this
       const { data, error } = await supabase
         .from('items')
-        .select('id, name, data, created_at')
+        .select('id, name, data, created_at, user_id')
+        .eq('user_id', userId)
         .limit(500);
 
       if (error) throw error;
@@ -196,6 +212,12 @@ export const saveItem = async (item: Item): Promise<void> => {
   setLocalItems(localItems);
 
   if (isSupabaseConfigured()) {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+
     try {
       const { error } = await supabase
         .from('items')
@@ -203,7 +225,8 @@ export const saveItem = async (item: Item): Promise<void> => {
           id: item.id,
           name: item.name,
           data: item, // Store full object in JSONB column
-          created_at: item.createdAt
+          created_at: item.createdAt,
+          user_id: userId // Associate with current user
         });
 
       if (error) throw error;
@@ -222,11 +245,19 @@ export const deleteItem = async (id: string): Promise<void> => {
   setLocalItems(localItems);
 
   if (isSupabaseConfigured()) {
+    const userId = await getCurrentUserId();
+
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+
     try {
+      // Delete only if user owns the item (RLS will also enforce this)
       const { error } = await supabase
         .from('items')
         .delete()
-        .eq('id', id);
+        .eq('id', id)
+        .eq('user_id', userId);
 
       if (error) throw error;
     } catch (err) {
