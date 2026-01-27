@@ -12,9 +12,7 @@ interface QuickSaleModalProps {
 const PLATFORMS: { id: Platform; label: string; color: string; lightBg: string; border: string; text: string }[] = [
   { id: 'Vinted', label: 'Vinted', color: '#34C759', lightBg: 'bg-green-50 dark:bg-green-900/20', border: 'border-green-200 dark:border-green-800', text: 'text-green-600 dark:text-green-400' },
   { id: 'Facebook', label: 'Facebook', color: '#007AFF', lightBg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-600 dark:text-blue-400' },
-  { id: 'Aukro', label: 'Aukro', color: '#FF9500', lightBg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-600 dark:text-orange-400' },
-  { id: 'Depop', label: 'Depop', color: '#FF3B30', lightBg: 'bg-red-50 dark:bg-red-900/20', border: 'border-red-200 dark:border-red-800', text: 'text-red-600 dark:text-red-400' },
-  { id: 'Jiné', label: 'Jiné', color: '#AF52DE', lightBg: 'bg-purple-50 dark:bg-purple-900/20', border: 'border-purple-200 dark:border-purple-800', text: 'text-purple-600 dark:text-purple-400' },
+  { id: 'Jiné', label: 'Jiné', color: '#FF9500', lightBg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-600 dark:text-orange-400' },
 ];
 
 const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, onSave }) => {
@@ -187,7 +185,7 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
           </div>
 
           {/* Action Button */}
-          <div className="p-5 pt-0">
+          <div className="p-5 pt-0 pb-8">
             <button
               onClick={handleSave}
               disabled={!salePrice || Number(salePrice) <= 0}
@@ -202,8 +200,8 @@ const QuickSaleModal: React.FC<QuickSaleModalProps> = ({ item, isOpen, onClose, 
             </button>
           </div>
 
-          {/* Safe Area */}
-          <div className="h-8" />
+          {/* Safe Area for home indicator */}
+          <div className="h-6 safe-area-bottom" />
         </div>
       </div>
     </>
