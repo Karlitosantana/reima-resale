@@ -11,7 +11,7 @@ interface InventoryProps {
   items: Item[];
 }
 
-type SortOption = 'date' | 'profit' | 'price';
+type SortOption = 'date_newest' | 'date_oldest' | 'profit' | 'price';
 
 // Custom Pants Icon component to replace Scissors
 const PantsIcon = ({ size = 24, className = "" }: { size?: number, className?: string }) => (
@@ -212,7 +212,7 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
   const [filter, setFilter] = useState<'all' | 'active' | 'sold'>('all');
   const [categoryFilter, setCategoryFilter] = useState<ItemCategory | 'all'>('all');
   const [search, setSearch] = useState('');
-  const [sort, setSort] = useState<SortOption>('date');
+  const [sort, setSort] = useState<SortOption>('date_newest');
 
   // Quick Sale Modal state
   const [quickSaleItem, setQuickSaleItem] = useState<Item | null>(null);
@@ -251,7 +251,8 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
       return matchesName || matchesCategory;
     })
     .sort((a, b) => {
-      if (sort === 'date') return b.createdAt - a.createdAt;
+      if (sort === 'date_newest') return b.createdAt - a.createdAt;
+      if (sort === 'date_oldest') return a.createdAt - b.createdAt;
       if (sort === 'price') return b.purchasePrice - a.purchasePrice;
       if (sort === 'profit') {
         const getProfit = (i: Item) =>
@@ -282,7 +283,8 @@ const Inventory: React.FC<InventoryProps> = ({ items }) => {
                   onChange={(e) => setSort(e.target.value as SortOption)}
                   className="bg-transparent text-xs font-medium text-gray-700 dark:text-gray-300 appearance-none focus:outline-none pr-1"
                 >
-                  <option value="date">Nejnovější</option>
+                  <option value="date_newest">Nejnovější</option>
+                  <option value="date_oldest">Nejstarší</option>
                   <option value="profit">Nejvyšší zisk</option>
                   <option value="price">Nejdražší</option>
                 </select>
