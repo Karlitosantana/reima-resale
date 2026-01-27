@@ -74,10 +74,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             <div className="relative">
               <button
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-200/80 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors shadow-sm border border-gray-300/50 dark:border-gray-600"
               >
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-ios-blue to-purple-500 flex items-center justify-center">
-                  <User size={14} className="text-white" />
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 via-orange-500 to-amber-500 flex items-center justify-center shadow-md">
+                  <User size={15} className="text-white" />
                 </div>
                 {isOnline && (
                   <div className="relative flex h-2 w-2">
