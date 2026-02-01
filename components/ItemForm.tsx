@@ -54,6 +54,7 @@ const ItemForm: React.FC = () => {
   // Sale quantity state
   const [sellQuantity, setSellQuantity] = useState(1);
   const [showSaleForm, setShowSaleForm] = useState(false);
+  const [totalPurchasePrice, setTotalPurchasePrice] = useState(0);
 
   // Swipe Refs
   const touchStartX = useRef<number | null>(null);
@@ -67,6 +68,7 @@ const ItemForm: React.FC = () => {
             if (found) {
                 if (!found.category) found.category = 'other';
                 setItem(found);
+                setTotalPurchasePrice(found.purchasePrice * (found.quantity || 1));
             } else {
                 navigate('/', { replace: true });
             }
@@ -199,14 +201,17 @@ const ItemForm: React.FC = () => {
       toast.warning('Zadejte název položky');
       return;
     }
-    if (item.purchasePrice < 0) {
+    if (totalPurchasePrice < 0) {
       toast.warning('Cena nemůže být záporná');
       return;
     }
 
+    const quantity = item.quantity || 1;
+    const pricePerPiece = quantity > 0 ? Math.round(totalPurchasePrice / quantity) : totalPurchasePrice;
+
     setSaving(true);
     try {
-      await saveItem(item);
+      await saveItem({ ...item, purchasePrice: pricePerPiece });
       toast.success(id ? 'Položka uložena' : 'Položka vytvořena');
       setSaving(false);
       navigate(-1);
@@ -451,11 +456,11 @@ const ItemForm: React.FC = () => {
 
             <div className="grid grid-cols-3 gap-3">
                 <div>
-                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Cena/ks (Kč)</label>
+                    <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-1 ml-1">Celkem (Kč)</label>
                     <input
                         type="number"
-                        value={item.purchasePrice === 0 ? '' : item.purchasePrice}
-                        onChange={(e) => handleChange('purchasePrice', e.target.value === '' ? 0 : Number(e.target.value))}
+                        value={totalPurchasePrice === 0 ? '' : totalPurchasePrice}
+                        onChange={(e) => setTotalPurchasePrice(e.target.value === '' ? 0 : Number(e.target.value))}
                         className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-3 rounded-xl font-medium text-black dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-ios-blue"
                         placeholder="0"
                         disabled={saving}
@@ -484,6 +489,11 @@ const ItemForm: React.FC = () => {
                     />
                 </div>
             </div>
+            {(item.quantity || 1) > 1 && totalPurchasePrice > 0 && (
+                <p className="text-xs text-ios-textSec ml-1 -mt-1">
+                    {Math.round(totalPurchasePrice / (item.quantity || 1))} Kč/ks
+                </p>
+            )}
 
             <div>
                 <label className="block text-xs font-bold text-gray-900 dark:text-gray-300 uppercase mb-2 ml-1">Zdroj</label>
@@ -743,7 +753,8 @@ const ItemForm: React.FC = () => {
 
                                 {/* Profit Preview */}
                                 {(() => {
-                                    const profitPerItem = (item.salePrice || 0) - item.purchasePrice - (item.fees || 0) - (item.shippingCost || 0);
+                                    const purchasePricePerPiece = (item.quantity || 1) > 0 ? Math.round(totalPurchasePrice / (item.quantity || 1)) : totalPurchasePrice;
+                                    const profitPerItem = (item.salePrice || 0) - purchasePricePerPiece - (item.fees || 0) - (item.shippingCost || 0);
                                     const totalProfit = profitPerItem * sellQuantity;
                                     return (
                                         <div className={`p-3 rounded-xl flex justify-between items-center border ${totalProfit >= 0 ? 'bg-green-50 dark:bg-green-900/20 border-green-100 dark:border-green-900/30' : 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-900/30'}`}>
