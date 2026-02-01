@@ -5,7 +5,7 @@ import { Item, Platform, ItemCategory, Sale } from '../types';
 import { getItems, saveItem, createEmptyItem, deleteItem } from '../services/storage';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { useToast } from './Toast';
-import { ChevronLeft, Camera, Trash2, Loader2, Snowflake, Shirt, Footprints, Layers, Package, Tag, X, Image as ImageIcon } from 'lucide-react';
+import { ChevronLeft, Camera, Trash2, Loader2, Snowflake, Shirt, Footprints, Layers, Package, Tag, X, Image as ImageIcon, Pencil } from 'lucide-react';
 
 const BUCKET_NAME = 'item-images';
 const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -55,6 +55,8 @@ const ItemForm: React.FC = () => {
   const [sellQuantity, setSellQuantity] = useState(1);
   const [showSaleForm, setShowSaleForm] = useState(false);
   const [totalPurchasePrice, setTotalPurchasePrice] = useState(0);
+  const [editingSaleIndex, setEditingSaleIndex] = useState<number | null>(null);
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
 
   // Swipe Refs
   const touchStartX = useRef<number | null>(null);
@@ -630,6 +632,88 @@ const ItemForm: React.FC = () => {
                                 </label>
                                 {sales.map((sale, index) => {
                                     const profit = sale.salePrice - item.purchasePrice - sale.fees - sale.shippingCost;
+
+                                    if (editingSaleIndex === index && editingSale) {
+                                        return (
+                                            <div key={sale.id || index} className="p-3 bg-white dark:bg-black rounded-xl border-2 border-ios-blue space-y-3">
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Cena (Kč)</label>
+                                                        <input
+                                                            type="number"
+                                                            value={editingSale.salePrice || ''}
+                                                            onChange={(e) => setEditingSale({ ...editingSale, salePrice: Number(e.target.value) })}
+                                                            className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-2 rounded-lg text-sm font-medium text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-ios-blue"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Datum</label>
+                                                        <input
+                                                            type="date"
+                                                            value={editingSale.saleDate || ''}
+                                                            onChange={(e) => setEditingSale({ ...editingSale, saleDate: e.target.value })}
+                                                            className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-2 rounded-lg text-sm font-medium text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-ios-blue dark:color-scheme-dark"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Platforma</label>
+                                                    <select
+                                                        value={editingSale.salePlatform}
+                                                        onChange={(e) => setEditingSale({ ...editingSale, salePlatform: e.target.value as Platform })}
+                                                        className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-2 rounded-lg text-sm font-medium text-black dark:text-white appearance-none focus:outline-none focus:ring-1 focus:ring-ios-blue"
+                                                    >
+                                                        {platforms.map(p => <option key={p} value={p}>{p}</option>)}
+                                                    </select>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Poplatky (Kč)</label>
+                                                        <input
+                                                            type="number"
+                                                            value={editingSale.fees || ''}
+                                                            onChange={(e) => setEditingSale({ ...editingSale, fees: e.target.value === '' ? 0 : Number(e.target.value) })}
+                                                            className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-2 rounded-lg text-sm font-medium text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-ios-blue"
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase mb-1">Doprava (Kč)</label>
+                                                        <input
+                                                            type="number"
+                                                            value={editingSale.shippingCost || ''}
+                                                            onChange={(e) => setEditingSale({ ...editingSale, shippingCost: e.target.value === '' ? 0 : Number(e.target.value) })}
+                                                            className="w-full bg-ios-gray dark:bg-[#1C1C1E] p-2 rounded-lg text-sm font-medium text-black dark:text-white focus:outline-none focus:ring-1 focus:ring-ios-blue"
+                                                            placeholder="0"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => { setEditingSaleIndex(null); setEditingSale(null); }}
+                                                        className="flex-1 py-2 rounded-lg text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-200 dark:bg-gray-700"
+                                                    >
+                                                        Zrušit
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const updatedSales = [...sales];
+                                                            updatedSales[index] = editingSale;
+                                                            setItem(prev => ({ ...prev, sales: updatedSales }));
+                                                            setEditingSaleIndex(null);
+                                                            setEditingSale(null);
+                                                        }}
+                                                        className="flex-1 py-2 rounded-lg text-sm font-semibold text-white bg-ios-blue"
+                                                    >
+                                                        Uložit
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+
                                     return (
                                         <div key={sale.id || index} className="flex items-center justify-between p-3 bg-white dark:bg-black rounded-xl border border-gray-200 dark:border-gray-700">
                                             <div className="flex items-center gap-3">
@@ -643,9 +727,34 @@ const ItemForm: React.FC = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <span className={`text-sm font-bold ${profit >= 0 ? 'text-ios-green' : 'text-ios-red'}`}>
-                                                {profit >= 0 ? '+' : ''}{profit.toLocaleString('cs-CZ')} Kč
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-sm font-bold ${profit >= 0 ? 'text-ios-green' : 'text-ios-red'}`}>
+                                                    {profit >= 0 ? '+' : ''}{profit.toLocaleString('cs-CZ')} Kč
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setEditingSaleIndex(index); setEditingSale({ ...sale }); }}
+                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-ios-blue hover:bg-ios-blue/10 transition-colors"
+                                                >
+                                                    <Pencil size={14} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (window.confirm('Odstranit tento prodej?')) {
+                                                            const updatedSales = sales.filter((_, i) => i !== index);
+                                                            setItem(prev => ({
+                                                                ...prev,
+                                                                sales: updatedSales,
+                                                                status: updatedSales.length >= (prev.quantity || 1) ? 'sold' : 'active'
+                                                            }));
+                                                        }
+                                                    }}
+                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-ios-red hover:bg-ios-red/10 transition-colors"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            </div>
                                         </div>
                                     );
                                 })}
